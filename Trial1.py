@@ -12,13 +12,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for styling
+# Custom CSS for enhanced styling
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
     * {
         font-family: 'Inter', sans-serif;
+        color: #000000;
     }
     
     .main {
@@ -32,79 +33,156 @@ st.markdown("""
     }
     
     .quiz-container {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 25px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
     
     .result-card {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        border-left: 5px solid;
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border-left: 6px solid;
+        border: 1px solid #e0e0e0;
     }
     
     .category-score {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         font-weight: 600;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.8rem;
+        color: #000000;
+    }
+    
+    .progress-container {
+        margin: 1rem 0;
     }
     
     .progress-bar {
-        height: 20px;
-        border-radius: 10px;
-        background: #f0f0f0;
-        margin-bottom: 1rem;
+        height: 25px;
+        border-radius: 12px;
+        background: #f5f5f5;
+        margin-bottom: 0.5rem;
+        border: 1px solid #e0e0e0;
     }
     
     .progress-fill {
         height: 100%;
-        border-radius: 10px;
-        transition: width 0.5s ease;
+        border-radius: 12px;
+        transition: width 0.8s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .progress-text {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     }
     
     .header {
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
     }
     
     .question-box {
         background: #f8f9fa;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
-        border-left: 4px solid #667eea;
+        border-radius: 18px;
+        padding: 2rem;
+        margin: 2rem 0;
+        border-left: 5px solid #667eea;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     }
     
     .option-button {
         width: 100%;
-        margin: 0.5rem 0;
-        padding: 1rem;
-        border-radius: 12px;
-        border: 2px solid #e9ecef;
-        background: white;
+        margin: 0.8rem 0;
+        padding: 1.2rem;
+        border-radius: 15px;
+        border: 2px solid #e0e0e0;
+        background: #ffffff;
         text-align: left;
         transition: all 0.3s ease;
+        font-weight: 500;
+        color: #000000;
     }
     
     .option-button:hover {
         border-color: #667eea;
         background: #f0f4ff;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    }
+    
+    .option-button:active {
+        transform: translateY(0);
     }
     
     .submit-button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
-        padding: 1rem 2rem;
-        border-radius: 12px;
+        padding: 1.2rem 2.5rem;
+        border-radius: 15px;
         font-weight: 600;
         margin-top: 2rem;
         width: 100%;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .submit-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .category-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+        margin: 0.3rem;
+        font-size: 0.9rem;
+    }
+    
+    .career-item {
+        background: #f8f9fa;
+        padding: 0.8rem 1.2rem;
+        margin: 0.5rem 0;
+        border-radius: 10px;
+        border-left: 4px solid;
+        transition: all 0.3s ease;
+    }
+    
+    .career-item:hover {
+        transform: translateX(5px);
+        background: #f0f2f5;
+    }
+    
+    .highlight-box {
+        background: linear-gradient(135deg, #fff9e6 0%, #fff0f0 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border-left: 4px solid #ffd700;
+    }
+    
+    .radar-chart-container {
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e0e0e0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -317,59 +395,129 @@ def calculate_scores():
     
     return scores
 
+def create_radar_chart(scores):
+    """Create a radar chart visualization"""
+    categories = list(scores.keys())
+    values = list(scores.values())
+    
+    # Normalize values for better visualization
+    max_val = max(values) if max(values) > 0 else 1
+    normalized_values = [v/max_val * 100 for v in values]
+    
+    # Create radar chart using matplotlib
+    angles = np.linspace(0, 2*np.pi, len(categories), endpoint=False).tolist()
+    angles += angles[:1]  # Complete the circle
+    normalized_values += normalized_values[:1]
+    
+    fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+    
+    # Plot the radar chart
+    ax.fill(angles, normalized_values, color='rgba(102, 126, 234, 0.3)', alpha=0.7)
+    ax.plot(angles, normalized_values, color='#667eea', linewidth=2)
+    
+    # Add category labels
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(categories)
+    
+    # Customize the chart
+    ax.set_ylim(0, 100)
+    ax.set_yticks([25, 50, 75, 100])
+    ax.set_yticklabels(['25%', '50%', '75%', '100%'])
+    ax.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    return fig
+
 def display_results():
-    """Display quiz results"""
+    """Display quiz results with enhanced visuals"""
     scores = calculate_scores()
-    max_score = max(scores.values())
+    max_score = max(scores.values()) if max(scores.values()) > 0 else 1
     top_categories = [cat for cat, score in scores.items() if score == max_score]
     
     st.markdown("""
     <div class="header">
-        <h1>🎯 Your Career Interest Results</h1>
-        <p>Based on your answers, here's your career profile analysis</p>
+        <h1 style="color: #000000; margin-bottom: 1rem;">🎯 Your Career Interest Results</h1>
+        <p style="color: #666666; font-size: 1.2rem;">Based on your answers, here's your comprehensive career profile analysis</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Top recommendation
+    # Top recommendation with better styling
     st.markdown(f"""
     <div class="result-card" style="border-left-color: {category_colors[top_categories[0]]};">
-        <h2>🌟 Top Recommendation: {category_emojis[top_categories[0]]} {top_categories[0]}</h2>
-        <p>Your answers show strong alignment with {top_categories[0].lower()} careers. 
-        You demonstrated skills and interests that are valuable in this field.</p>
-        <h3>Suggested Career Paths:</h3>
-        <ul>
+        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+            <div style="font-size: 3rem; margin-right: 1rem;">{category_emojis[top_categories[0]]}</div>
+            <div>
+                <h2 style="color: #000000; margin: 0;">🌟 Top Recommendation</h2>
+                <h3 style="color: {category_colors[top_categories[0]]}; margin: 0.5rem 0;">{top_categories[0]}</h3>
+            </div>
+        </div>
+        <p style="color: #000000; font-size: 1.1rem; line-height: 1.6;">
+            Your answers show strong alignment with <strong>{top_categories[0].lower()}</strong> careers. 
+            You demonstrated exceptional skills and interests that are highly valuable in this field.
+        </p>
+    </div>
     """, unsafe_allow_html=True)
     
-    for career in career_suggestions[top_categories[0]][:4]:
-        st.markdown(f"<li>{career}</li>", unsafe_allow_html=True)
+    # Radar chart visualization
+    st.markdown("""
+    <div class="radar-chart-container">
+        <h3 style="color: #000000; text-align: center; margin-bottom: 1rem;">📈 Your Career Interest Profile</h3>
+    """, unsafe_allow_html=True)
     
-    st.markdown("</ul></div>", unsafe_allow_html=True)
+    radar_fig = create_radar_chart(scores)
+    st.pyplot(radar_fig)
+    st.markdown("</div>", unsafe_allow_html=True)
     
-    # Score breakdown
+    # Score breakdown with enhanced progress bars
     st.markdown("""
     <div class="result-card">
-        <h2>📊 Your Score Breakdown</h2>
-        <p>Here's how you scored across different career categories:</p>
+        <h2 style="color: #000000; margin-bottom: 1.5rem;">📊 Detailed Score Breakdown</h2>
+        <p style="color: #666666; margin-bottom: 2rem;">Here's how you scored across different career categories:</p>
     """, unsafe_allow_html=True)
     
     for category, score in sorted(scores.items(), key=lambda x: x[1], reverse=True):
         percentage = (score / 45) * 100  # Max possible score is 45 (3*15 questions)
+        
         st.markdown(f"""
-        <div class="category-score">
-            {category_emojis[category]} {category}: {score} points
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill" style="width: {percentage}%; background: {category_colors[category]};"></div>
+        <div style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.2rem; font-weight: 600; color: #000000;">
+                    {category_emojis[category]} {category}
+                </span>
+                <span style="font-size: 1.1rem; font-weight: 600; color: {category_colors[category]};">{score} points</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {percentage}%; background: {category_colors[category]};">
+                    <span class="progress-text">{percentage:.1f}%</span>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
     
-    # Answer analysis
+    # Suggested careers with better styling
+    st.markdown(f"""
+    <div class="result-card">
+        <h2 style="color: #000000; margin-bottom: 1.5rem;">💼 Suggested Career Paths for {top_categories[0]}</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+    """, unsafe_allow_html=True)
+    
+    for career in career_suggestions[top_categories[0]][:6]:
+        st.markdown(f"""
+        <div class="career-item" style="border-left-color: {category_colors[top_categories[0]]};">
+            <div style="font-weight: 600; color: #000000; margin-bottom: 0.3rem;">{career}</div>
+            <div style="font-size: 0.9rem; color: #666666;">Great match for your skills and interests</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("</div></div>", unsafe_allow_html=True)
+    
+    # Answer analysis with enhanced styling
     st.markdown("""
     <div class="result-card">
-        <h2>🔍 Answer Analysis</h2>
-        <p>Here's what your choices reveal about your skills and interests:</p>
+        <h2 style="color: #000000; margin-bottom: 1.5rem;">🔍 Detailed Answer Analysis</h2>
+        <p style="color: #666666; margin-bottom: 2rem;">Here's what your choices reveal about your skills and interests:</p>
     """, unsafe_allow_html=True)
     
     for i, (q_index, a_index) in enumerate(st.session_state.answers.items()):
@@ -377,27 +525,45 @@ def display_results():
         option = question['options'][a_index]
         
         reasons = []
-        for cat in option['scores']:
-            if option['scores'][cat] > 0:
+        skill_emojis = []
+        for cat, points in option['scores'].items():
+            if points > 0:
                 reasons.append(f"{cat.lower()} skills")
+                skill_emojis.append(category_emojis[cat])
         
         st.markdown(f"""
         <div class="question-box">
-            <h4>Q{i+1}: {question['question']}</h4>
-            <p><strong>Your choice:</strong> {option['text']}</p>
-            <p><strong>This suggests:</strong> You have strengths in {', '.join(reasons)}</p>
+            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <div style="background: {category_colors['Engineering']}; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; margin-right: 1rem;">
+                    {i+1}
+                </div>
+                <h4 style="color: #000000; margin: 0;">{question['question']}</h4>
+            </div>
+            <div style="background: #ffffff; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+                <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">Your choice:</div>
+                <div style="color: #667eea; font-weight: 500;">{option['text']}</div>
+            </div>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 10px;">
+                <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">This suggests:</div>
+                <div style="color: #000000;">
+                    You have strengths in {', '.join(reasons)} 
+                    <span style="font-size: 1.2rem; margin-left: 0.5rem;">{' '.join(skill_emojis)}</span>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
     
-    # Reset button
-    if st.button("🔄 Take Quiz Again", use_container_width=True):
-        st.session_state.current_question = 0
-        st.session_state.answers = {}
-        st.session_state.show_results = False
-        st.session_state.scores = {category: 0 for category in category_colors.keys()}
-        st.rerun()
+    # Reset button with better styling
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("🔄 Take Quiz Again", use_container_width=True, type="primary"):
+            st.session_state.current_question = 0
+            st.session_state.answers = {}
+            st.session_state.show_results = False
+            st.session_state.scores = {category: 0 for category in category_colors.keys()}
+            st.rerun()
 
 def main():
     st.markdown('<div class="main">', unsafe_allow_html=True)
@@ -406,34 +572,44 @@ def main():
     if st.session_state.show_results:
         display_results()
     else:
-        # Display header
+        # Display header with enhanced styling
         st.markdown("""
         <div class="header">
-            <h1>🎯 Career Interest Quiz</h1>
-            <p>Discover your ideal career path with this 15-question assessment</p>
+            <h1 style="color: #000000; margin-bottom: 1rem; font-size: 2.5rem;">🎯 Career Interest Quiz</h1>
+            <p style="color: #666666; font-size: 1.3rem; margin-bottom: 2rem;">Discover your ideal career path with this comprehensive 15-question assessment</p>
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                        padding: 10px 20px; border-radius: 20px; color: white; 
-                        display: inline-block; margin-top: 1rem;">
+                        padding: 15px 30px; border-radius: 25px; color: white; 
+                        display: inline-block; margin-top: 1rem; font-size: 1.2rem; font-weight: 600;">
                 Question {}/15
             </div>
         </div>
         """.format(st.session_state.current_question + 1), unsafe_allow_html=True)
         
-        # Display current question
+        # Display current question with enhanced styling
         current_q = questions[st.session_state.current_question]
         
         st.markdown(f"""
         <div class="question-box">
-            <h2>{current_q['question']}</h2>
+            <h2 style="color: #000000; margin-bottom: 1rem; font-size: 1.8rem;">{current_q['question']}</h2>
+            <div style="color: #666666; font-size: 1.1rem;">Select the option that best describes you:</div>
         </div>
         """, unsafe_allow_html=True)
         
-        # Display options
-        cols = st.columns(2)
+        # Display options with enhanced styling
         for i, option in enumerate(current_q['options']):
-            col = cols[i % 2]
-            if col.button(option['text'], key=f"option_{i}", use_container_width=True, 
-                         type="primary" if st.session_state.answers.get(st.session_state.current_question) == i else "secondary"):
+            is_selected = st.session_state.answers.get(st.session_state.current_question) == i
+            button_style = """
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border-color: #667eea !important;
+            """ if is_selected else ""
+            
+            if st.button(
+                option['text'], 
+                key=f"option_{i}", 
+                use_container_width=True,
+                type="primary" if is_selected else "secondary"
+            ):
                 st.session_state.answers[st.session_state.current_question] = i
                 if st.session_state.current_question < len(questions) - 1:
                     st.session_state.current_question += 1
@@ -441,8 +617,16 @@ def main():
                     st.session_state.show_results = True
                 st.rerun()
         
-        # Progress bar
+        # Enhanced progress bar
         progress = (st.session_state.current_question + 1) / len(questions)
+        st.markdown(f"""
+        <div style="margin: 2rem 0;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="color: #000000; font-weight: 500;">Progress</span>
+                <span style="color: #667eea; font-weight: 600;">{int(progress * 100)}% Complete</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         st.progress(progress)
         
         # Navigation buttons
@@ -454,7 +638,7 @@ def main():
                     st.rerun()
         with col3:
             if st.session_state.current_question == len(questions) - 1 and st.session_state.current_question in st.session_state.answers:
-                if st.button("Submit →", type="primary", use_container_width=True):
+                if st.button("Submit Results →", type="primary", use_container_width=True):
                     st.session_state.show_results = True
                     st.rerun()
     
