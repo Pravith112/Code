@@ -1,14 +1,11 @@
 import streamlit as st
-import time
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-from collections import Counter
 
 # ------------------- PAGE CONFIG -------------------
 st.set_page_config(
-    page_title="🎯 Career Interest Quiz",
-    page_icon="🎓",
+    page_title="🎯 Quantum Quest",
+    page_icon="🧬",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -24,17 +21,18 @@ h1, h2, h3 {
     color: #fff;
     text-align: center;
 }
-.question-box {
-    background: rgba(255,255,255,0.9);
-    padding: 20px;
-    margin: 15px 0;
-    border-radius: 20px;
-    border-left: 6px solid #667eea;
+.quiz-container {
+    background: linear-gradient(135deg, #ffffff, #f0f4ff);
+    border-radius: 25px;
+    padding: 30px;
+    margin: 40px auto;
+    max-width: 800px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 .option-button {
     width: 100%;
-    margin: 5px 0;
-    padding: 12px;
+    margin: 8px 0;
+    padding: 15px;
     border-radius: 12px;
     border: 2px solid #e9ecef;
     background: white;
@@ -43,35 +41,26 @@ h1, h2, h3 {
 }
 .option-button:hover {
     border-color: #764ba2;
-    background: #f0f4ff;
-}
-.submit-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 12px;
-    font-weight: 600;
-    width: 100%;
-}
-.result-card {
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 15px 0;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    background: #e0e7ff;
 }
 .progress-container {
     width: 100%;
     background: #f0f0f0;
     border-radius: 10px;
-    margin-bottom: 15px;
+    margin: 15px 0;
 }
 .progress-fill {
     height: 20px;
     border-radius: 10px;
     background: #667eea;
     transition: width 0.5s ease;
+}
+.result-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -87,28 +76,9 @@ questions = [
             {"text": "Research and analyze data", "scores": {"Science":3, "IT":1}}
         ]
     },
-    {
-        "question": "My favorite subjects in school were:",
-        "options": [
-            {"text": "Math and Physics", "scores": {"Engineering":3, "Science":2}},
-            {"text": "Art and Music", "scores": {"Arts":3, "Management":1}},
-            {"text": "Business and Economics", "scores": {"Management":3, "IT":1}},
-            {"text": "Biology and Chemistry", "scores": {"Science":3, "Engineering":1}}
-        ]
-    },
-    {
-        "question": "In my free time, I enjoy:",
-        "options": [
-            {"text": "Building or fixing things", "scores": {"Engineering":3, "IT":1}},
-            {"text": "Drawing, painting, or creating art", "scores": {"Arts":3}},
-            {"text": "Planning events or organizing things", "scores": {"Management":3}},
-            {"text": "Reading scientific articles or experiments", "scores": {"Science":3}}
-        ]
-    },
-    # ... repeat till 15 questions like your original file
+    # Add all 15 questions here like before
 ]
 
-# Category colors and emojis
 category_colors = {
     'Engineering':'#FF6B6B',
     'Arts':'#4ECDC4',
@@ -153,9 +123,8 @@ def display_results():
     top_score = max(scores.values())
     top_categories = [cat for cat,score in scores.items() if score==top_score]
     
-    st.markdown("<h1>🎯 Your Career Interest Results</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>🎯 Quantum Quest - Results</h1>", unsafe_allow_html=True)
     
-    # Top recommendation
     st.markdown(f"""
     <div class='result-card' style='border-left:5px solid {category_colors[top_categories[0]]}'>
     <h2>🌟 Top Recommendation: {category_emojis[top_categories[0]]} {top_categories[0]}</h2>
@@ -166,11 +135,11 @@ def display_results():
         st.markdown(f"<li>{career}</li>", unsafe_allow_html=True)
     st.markdown("</ul></div>", unsafe_allow_html=True)
     
-    # Score bar chart
+    # Bar chart
     df = pd.DataFrame(list(scores.items()), columns=['Category','Score'])
     st.bar_chart(df.set_index('Category'))
-
-    # Replay
+    
+    # Replay button
     if st.button("🔄 Retake Quiz"):
         st.session_state.current_question = 0
         st.session_state.answers = {}
@@ -180,7 +149,7 @@ def display_results():
     st.balloons()
 
 # ------------------- MAIN -------------------
-st.markdown("<div class='question-box'>", unsafe_allow_html=True)
+st.markdown("<div class='quiz-container'>", unsafe_allow_html=True)
 
 if st.session_state.show_results:
     display_results()
@@ -199,10 +168,12 @@ else:
                 st.session_state.show_results = True
             st.rerun()
     
-    # Progress
+    # Progress bar
     progress = (st.session_state.current_question+1)/len(questions)
     st.markdown(f"""
     <div class='progress-container'>
         <div class='progress-fill' style='width:{progress*100}%'></div>
     </div>
     """, unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
