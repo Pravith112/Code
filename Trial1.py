@@ -386,12 +386,20 @@ questions = [
 
 def calculate_scores():
     """Calculate scores based on answers"""
+    # ensure categories exist
     scores = {category: 0 for category in category_colors.keys()}
     
     for question_index, answer_index in st.session_state.answers.items():
-        option = questions[question_index]['options'][answer_index]
-        for category, points in option['scores'].items():
-            scores[category] += points
+        # guard against invalid indices
+        if not (0 <= question_index < len(questions)):
+            continue
+        options = questions[question_index].get('options', [])
+        if not (0 <= answer_index < len(options)):
+            continue
+        option = options[answer_index]
+        for category, points in option.get('scores', {}).items():
+            if category in scores:
+                scores[category] += points
     
     return scores
 
@@ -411,8 +419,8 @@ def create_radar_chart(scores):
     
     fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
     
-    # Plot the radar chart
-    ax.fill(angles, normalized_values, color='rgba(102, 126, 234, 0.3)', alpha=0.7)
+    # Use a valid matplotlib color and alpha
+    ax.fill(angles, normalized_values, color='#667eea', alpha=0.25)
     ax.plot(angles, normalized_values, color='#667eea', linewidth=2)
     
     # Add category labels
@@ -431,8 +439,12 @@ def create_radar_chart(scores):
 def display_results():
     """Display quiz results with enhanced visuals"""
     scores = calculate_scores()
-    max_score = max(scores.values()) if max(scores.values()) > 0 else 1
+    # compute the max score and pick top categories (handles zero scores too)
+    max_score = max(scores.values())
     top_categories = [cat for cat, score in scores.items() if score == max_score]
+    if not top_categories:
+        # fallback in unexpected case
+        top_categories = [next(iter(scores.keys()))]
     
     st.markdown("""
     <div class="header">
@@ -442,18 +454,19 @@ def display_results():
     """, unsafe_allow_html=True)
     
     # Top recommendation with better styling
+    primary = top_categories[0]
     st.markdown(f"""
-    <div class="result-card" style="border-left-color: {category_colors[top_categories[0]]};">
+    <div class="result-card" style="border-left-color: {category_colors.get(primary, '#667eea')};">
         <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-            <div style="font-size: 3rem; margin-right: 1rem;">{category_emojis[top_categories[0]]}</div>
+            <div style="font-size: 3rem; margin-right: 1rem;">{category_emojis.get(primary, '')}</div>
             <div>
                 <h2 style="color: #000000; margin: 0;">🌟 Top Recommendation</h2>
-                <h3 style="color: {category_colors[top_categories[0]]}; margin: 0.5rem 0;">{top_categories[0]}</h3>
+                <h3 style="color: {category_colors.get(primary, '#667eea')}; margin: 0.5rem 0;">{primary}</h3>
             </div>
         </div>
         <p style="color: #000000; font-size: 1.1rem; line-height: 1.6;">
-            Your answers show strong alignment with <strong>{top_categories[0].lower()}</strong> careers. 
-            You demonstrated exceptional skills and interests that are highly valuable in this field.
+            Your answers show alignment with <strong>{primary.lower()}</strong> careers. 
+            These results highlight key strengths and interests relevant to this area.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -475,19 +488,25 @@ def display_results():
         <p style="color: #666666; margin-bottom: 2rem;">Here's how you scored across different career categories:</p>
     """, unsafe_allow_html=True)
     
+    # Use dynamic max possible (3 points per question as theoretical max)
+    max_possible = 3 * len(questions)
+    # Avoid division by zero
+    if max_possible <= 0:
+        max_possible = 1
+    
     for category, score in sorted(scores.items(), key=lambda x: x[1], reverse=True):
-        percentage = (score / 45) * 100  # Max possible score is 45 (3*15 questions)
+        percentage = (score / max_possible) * 100
         
         st.markdown(f"""
         <div style="margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 <span style="font-size: 1.2rem; font-weight: 600; color: #000000;">
-                    {category_emojis[category]} {category}
+                    {category_emojis.get(category, '')} {category}
                 </span>
-                <span style="font-size: 1.1rem; font-weight: 600; color: {category_colors[category]};">{score} points</span>
+                <span style="font-size: 1.1rem; font-weight: 600; color: {category_colors.get(category, '#667eea')};">{score} points</span>
             </div>
             <div class="progress-bar">
-                <div class="progress-fill" style="width: {percentage}%; background: {category_colors[category]};">
+                <div class="progress-fill" style="width: {percentage}%; background: {category_colors.get(category, '#667eea')};">
                     <span class="progress-text">{percentage:.1f}%</span>
                 </div>
             </div>
@@ -499,13 +518,13 @@ def display_results():
     # Suggested careers with better styling
     st.markdown(f"""
     <div class="result-card">
-        <h2 style="color: #000000; margin-bottom: 1.5rem;">💼 Suggested Career Paths for {top_categories[0]}</h2>
+        <h2 style="color: #000000; margin-bottom: 1.5rem;">💼 Suggested Career Paths for {primary}</h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
     """, unsafe_allow_html=True)
     
-    for career in career_suggestions[top_categories[0]][:6]:
+    for career in career_suggestions.get(primary, [])[:6]:
         st.markdown(f"""
-        <div class="career-item" style="border-left-color: {category_colors[top_categories[0]]};">
+        <div class="career-item" style="border-left-color: {category_colors.get(primary, '#667eea')};">
             <div style="font-weight: 600; color: #000000; margin-bottom: 0.3rem;">{career}</div>
             <div style="font-size: 0.9rem; color: #666666;">Great match for your skills and interests</div>
         </div>
@@ -520,21 +539,27 @@ def display_results():
         <p style="color: #666666; margin-bottom: 2rem;">Here's what your choices reveal about your skills and interests:</p>
     """, unsafe_allow_html=True)
     
-    for i, (q_index, a_index) in enumerate(st.session_state.answers.items()):
+    # enumerating answers in a stable order
+    for i, (q_index, a_index) in enumerate(sorted(st.session_state.answers.items(), key=lambda x: x[0])):
+        if not (0 <= q_index < len(questions)):
+            continue
         question = questions[q_index]
-        option = question['options'][a_index]
+        options = question.get('options', [])
+        if not (0 <= a_index < len(options)):
+            continue
+        option = options[a_index]
         
         reasons = []
         skill_emojis = []
-        for cat, points in option['scores'].items():
+        for cat, points in option.get('scores', {}).items():
             if points > 0:
                 reasons.append(f"{cat.lower()} skills")
-                skill_emojis.append(category_emojis[cat])
+                skill_emojis.append(category_emojis.get(cat, ''))
         
         st.markdown(f"""
         <div class="question-box">
             <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-                <div style="background: {category_colors['Engineering']}; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; margin-right: 1rem;">
+                <div style="background: {category_colors.get('Engineering', '#667eea')}; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; margin-right: 1rem;">
                     {i+1}
                 </div>
                 <h4 style="color: #000000; margin: 0;">{question['question']}</h4>
@@ -546,7 +571,7 @@ def display_results():
             <div style="background: #f8f9fa; padding: 1rem; border-radius: 10px;">
                 <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">This suggests:</div>
                 <div style="color: #000000;">
-                    You have strengths in {', '.join(reasons)} 
+                    You have strengths in {', '.join(reasons) if reasons else 'varied areas'} 
                     <span style="font-size: 1.2rem; margin-left: 0.5rem;">{' '.join(skill_emojis)}</span>
                 </div>
             </div>
@@ -558,7 +583,7 @@ def display_results():
     # Reset button with better styling
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("🔄 Take Quiz Again", use_container_width=True, type="primary"):
+        if st.button("🔄 Take Quiz Again", use_container_width=True):
             st.session_state.current_question = 0
             st.session_state.answers = {}
             st.session_state.show_results = False
@@ -566,27 +591,39 @@ def display_results():
             st.rerun()
 
 def main():
+    # ensure current_question in valid range
+    if st.session_state.current_question < 0:
+        st.session_state.current_question = 0
+    if st.session_state.current_question >= len(questions):
+        st.session_state.current_question = max(0, len(questions) - 1)
+
     st.markdown('<div class="main">', unsafe_allow_html=True)
     st.markdown('<div class="quiz-container">', unsafe_allow_html=True)
     
     if st.session_state.show_results:
         display_results()
     else:
-        # Display header with enhanced styling
-        st.markdown("""
+        # Display header with enhanced styling and dynamic total
+        total_q = len(questions)
+        current_number = st.session_state.current_question + 1
+        st.markdown(f"""
         <div class="header">
             <h1 style="color: #000000; margin-bottom: 1rem; font-size: 2.5rem;">🎯 Career Interest Quiz</h1>
-            <p style="color: #666666; font-size: 1.3rem; margin-bottom: 2rem;">Discover your ideal career path with this comprehensive 15-question assessment</p>
+            <p style="color: #666666; font-size: 1.3rem; margin-bottom: 2rem;">Discover your ideal career path with this comprehensive {total_q}-question assessment</p>
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                         padding: 15px 30px; border-radius: 25px; color: white; 
                         display: inline-block; margin-top: 1rem; font-size: 1.2rem; font-weight: 600;">
-                Question {}/15
+                Question {current_number}/{total_q}
             </div>
         </div>
-        """.format(st.session_state.current_question + 1), unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
         
         # Display current question with enhanced styling
-        current_q = questions[st.session_state.current_question]
+        try:
+            current_q = questions[st.session_state.current_question]
+        except IndexError:
+            st.error("Question index out of range.")
+            st.stop()
         
         st.markdown(f"""
         <div class="question-box">
@@ -596,21 +633,13 @@ def main():
         """, unsafe_allow_html=True)
         
         # Display options with enhanced styling
-        for i, option in enumerate(current_q['options']):
+        for i, option in enumerate(current_q.get('options', [])):
             is_selected = st.session_state.answers.get(st.session_state.current_question) == i
-            button_style = """
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
-            border-color: #667eea !important;
-            """ if is_selected else ""
             
-            if st.button(
-                option['text'], 
-                key=f"option_{i}", 
-                use_container_width=True,
-                type="primary" if is_selected else "secondary"
-            ):
+            # Use plain streamlit buttons (some streamlit versions don't support 'type')
+            if st.button(option['text'], key=f"option_{st.session_state.current_question}_{i}", use_container_width=True):
                 st.session_state.answers[st.session_state.current_question] = i
+                # if not last question, advance; else show results
                 if st.session_state.current_question < len(questions) - 1:
                     st.session_state.current_question += 1
                 else:
@@ -618,7 +647,7 @@ def main():
                 st.rerun()
         
         # Enhanced progress bar
-        progress = (st.session_state.current_question + 1) / len(questions)
+        progress = (st.session_state.current_question + 1) / len(questions) if len(questions) > 0 else 0
         st.markdown(f"""
         <div style="margin: 2rem 0;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
@@ -637,8 +666,9 @@ def main():
                     st.session_state.current_question -= 1
                     st.rerun()
         with col3:
+            # enable submit only if last question answered
             if st.session_state.current_question == len(questions) - 1 and st.session_state.current_question in st.session_state.answers:
-                if st.button("Submit Results →", type="primary", use_container_width=True):
+                if st.button("Submit Results →", use_container_width=True):
                     st.session_state.show_results = True
                     st.rerun()
     
