@@ -1,653 +1,504 @@
+"""
+Streamlit Career Interest Quiz - 15 questions
+
+Run:
+    pip install -r requirements.txt
+    streamlit run streamlit_app.py
+
+This app asks 15 questions, accumulates points across 5 career categories:
+Engineering, Arts, Management, Science, IT
+
+After submitting, it shows:
+- Top recommended career category
+- Dynamic per-answer explanations ("You chose this because... -> indicating skills/interests -> suggested careers.")
+- Full score breakdown with a chart
+- Stylish UI with gradient background, cards, and emojis
+"""
+
+from typing import Dict, List
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-from datetime import datetime
 
-# Configure page
-st.set_page_config(
-    page_title="Career Interest Quiz",
-    page_icon="🎯",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+st.set_page_config(page_title="Career Compass — 15Q Quiz", page_icon="🧭", layout="wide")
+
+# ----------------------------
+# Styling (gradient background, card styles)
+# ----------------------------
+st.markdown(
+    """
+    <style>
+    :root{
+      --card-bg: rgba(255,255,255,0.06);
+      --glass: rgba(255,255,255,0.04);
+      --accent: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+      --card-radius: 14px;
+    }
+    html, body, [data-testid="stAppViewContainer"] > .main {
+      height: 100%;
+    }
+    body {
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(97,42,255,0.14), transparent 10%),
+                  radial-gradient(1000px 500px at 90% 90%, rgba(37,117,252,0.10), transparent 10%),
+                  linear-gradient(180deg, #0f172a 0%, #071022 100%);
+      color: #e6eef8;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    .title {
+      background: linear-gradient(90deg,#ffe259,#ffa751);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight:800;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: var(--card-radius);
+      padding: 18px;
+      box-shadow: 0 6px 26px rgba(2,6,23,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    .result-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(2,6,23,0.7);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .big-num {
+      font-size: 34px;
+      font-weight: 800;
+    }
+    .small {
+      color: #c8d3e8;
+      font-size: 13px;
+    }
+    .emoji {
+      font-size: 26px;
+      margin-right:8px;
+    }
+    .badge {
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.03);
+      color:#e9f0ff;
+      font-weight:600;
+    }
+    .muted { color: #9fb0d8; }
+    .explain {
+      background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
-# Custom CSS for enhanced styling
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    * {
-        font-family: 'Inter', sans-serif;
-        color: #000000;
-    }
-    
-    .main {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        min-height: 100vh;
-    }
-    
-    .stApp {
-        background: transparent;
-    }
-    
-    .quiz-container {
-        background: rgba(255, 255, 255, 0.98);
-        border-radius: 25px;
-        padding: 3rem;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        margin-bottom: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .result-card {
-        background: #ffffff;
-        border-radius: 20px;
-        padding: 2rem;
-        margin: 1.5rem 0;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-        border-left: 6px solid;
-        border: 1px solid #e0e0e0;
-    }
-    
-    .category-score {
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin-bottom: 0.8rem;
-        color: #000000;
-    }
-    
-    .progress-container {
-        margin: 1rem 0;
-    }
-    
-    .progress-bar {
-        height: 25px;
-        border-radius: 12px;
-        background: #f5f5f5;
-        margin-bottom: 0.5rem;
-        border: 1px solid #e0e0e0;
-    }
-    
-    .progress-fill {
-        height: 100%;
-        border-radius: 12px;
-        transition: width 0.8s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .progress-text {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #ffffff;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    }
-    
-    .header {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
-    
-    .question-box {
-        background: #f8f9fa;
-        border-radius: 18px;
-        padding: 2rem;
-        margin: 2rem 0;
-        border-left: 5px solid #667eea;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    }
-    
-    .option-button {
-        width: 100%;
-        margin: 0.8rem 0;
-        padding: 1.2rem;
-        border-radius: 15px;
-        border: 2px solid #e0e0e0;
-        background: #ffffff;
-        text-align: left;
-        transition: all 0.3s ease;
-        font-weight: 500;
-        color: #000000;
-    }
-    
-    .option-button:hover {
-        border-color: #667eea;
-        background: #f0f4ff;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
-    }
-    
-    .submit-button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 1.2rem 2.5rem;
-        border-radius: 15px;
-        font-weight: 600;
-        margin-top: 2rem;
-        width: 100%;
-        font-size: 1.1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .category-badge {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        border-radius: 25px;
-        font-weight: 600;
-        margin: 0.3rem;
-        font-size: 0.9rem;
-    }
-    
-    .career-item {
-        background: #f8f9fa;
-        padding: 0.8rem 1.2rem;
-        margin: 0.5rem 0;
-        border-radius: 10px;
-        border-left: 4px solid;
-        transition: all 0.3s ease;
-    }
-    
-    .radar-chart-container {
-        background: #ffffff;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 2rem 0;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e0e0e0;
-    }
-    
-    .stButton > button {
-        width: 100%;
-        margin: 0.8rem 0;
-        padding: 1.2rem;
-        border-radius: 15px;
-        border: 2px solid #e0e0e0;
-        background: #ffffff;
-        text-align: left;
-        transition: all 0.3s ease;
-        font-weight: 500;
-        color: #000000;
-    }
-    
-    .stButton > button:hover {
-        border-color: #667eea;
-        background: #f0f4ff;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
-    }
-    
-    .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Initialize session state
-if 'current_question' not in st.session_state:
-    st.session_state.current_question = 0
-if 'answers' not in st.session_state:
-    st.session_state.answers = {}
-if 'show_results' not in st.session_state:
-    st.session_state.show_results = False
-if 'scores' not in st.session_state:
-    st.session_state.scores = {
-        'Engineering': 0,
-        'Arts': 0,
-        'Management': 0,
-        'Science': 0,
-        'IT': 0
-    }
-
-# Career category colors
-category_colors = {
-    'Engineering': '#FF6B6B',
-    'Arts': '#4ECDC4',
-    'Management': '#45B7D1',
-    'Science': '#F9A826',
-    'IT': '#796AEE'
+# ----------------------------
+# Data: categories, emojis, suggested careers
+# ----------------------------
+CATEGORIES = ["Engineering", "Arts", "Management", "Science", "IT"]
+EMOJI = {
+    "Engineering": "🔧",
+    "Arts": "🎨",
+    "Management": "🧭",
+    "Science": "🔬",
+    "IT": "💻",
+}
+SUGGESTED_CAREERS = {
+    "Engineering": ["Mechanical Engineer", "Civil Engineer", "Electrical Engineer", "Product Engineer"],
+    "Arts": ["Graphic Designer", "Illustrator", "Animator", "UX/UI Designer"],
+    "Management": ["Project Manager", "Product Manager", "Operations Manager", "Business Analyst"],
+    "Science": ["Research Scientist", "Lab Technician", "Data Scientist", "Environmental Scientist"],
+    "IT": ["Software Developer", "Systems Admin", "DevOps Engineer", "Data Engineer"],
 }
 
-# Career category emojis
-category_emojis = {
-    'Engineering': '🔧',
-    'Arts': '🎨',
-    'Management': '📊',
-    'Science': '🔬',
-    'IT': '💻'
-}
-
-# Career suggestions
-career_suggestions = {
-    'Engineering': [
-        "Mechanical Engineer", "Civil Engineer", "Electrical Engineer",
-        "Aerospace Engineer", "Biomedical Engineer", "Environmental Engineer"
-    ],
-    'Arts': [
-        "Graphic Designer", "Musician", "Writer", "Photographer",
-        "Art Director", "Animator", "Architect"
-    ],
-    'Management': [
-        "Project Manager", "Business Analyst", "HR Manager",
-        "Marketing Manager", "Operations Manager", "Product Manager"
-    ],
-    'Science': [
-        "Biologist", "Chemist", "Physicist", "Research Scientist",
-        "Medical Researcher", "Environmental Scientist"
-    ],
-    'IT': [
-        "Software Developer", "Data Scientist", "Network Administrator",
-        "Cybersecurity Analyst", "Systems Analyst", "AI/ML Engineer"
-    ]
-}
-
-# Quiz questions and options
-questions = [
+# ----------------------------
+# Questions and options
+# For each option we set:
+# - label: text to show
+# - scores: dict add scores to categories
+# - explain: short explanation template (we will expand dynamically)
+# ----------------------------
+QUESTIONS = [
     {
-        "question": "When working on a project, I prefer to:",
-        "options": [
-            {"text": "Design and build physical solutions", "scores": {"Engineering": 3, "IT": 1}},
-            {"text": "Create visual or artistic elements", "scores": {"Arts": 3, "Management": 1}},
-            {"text": "Organize and manage the team", "scores": {"Management": 3, "Engineering": 1}},
-            {"text": "Research and analyze data", "scores": {"Science": 3, "IT": 1}}
-        ]
+        "q": "1) When you face a new problem, what do you enjoy most?",
+        "opts": [
+            {"label": "Designing practical solutions and prototypes", "scores": {"Engineering": 2, "IT": 1}, "explain": "You prefer building and iterating tangible solutions."},
+            {"label": "Sketching or imagining creative concepts", "scores": {"Arts": 2}, "explain": "You like creative expression and visual thinking."},
+            {"label": "Organizing steps, people and resources to solve it", "scores": {"Management": 2}, "explain": "You naturally plan, coordinate, and lead."},
+            {"label": "Reading scientific papers and testing hypotheses", "scores": {"Science": 2}, "explain": "You enjoy rigorous investigation and experimentation."},
+        ],
     },
     {
-        "question": "My favorite subjects in school were:",
-        "options": [
-            {"text": "Math and Physics", "scores": {"Engineering": 3, "Science": 2}},
-            {"text": "Art and Music", "scores": {"Arts": 3, "Management": 1}},
-            {"text": "Business and Economics", "scores": {"Management": 3, "IT": 1}},
-            {"text": "Biology and Chemistry", "scores": {"Science": 3, "Engineering": 1}}
-        ]
+        "q": "2) Which activity sounds most like fun to you on a free weekend?",
+        "opts": [
+            {"label": "Tinkering with gadgets or building things", "scores": {"Engineering": 2, "IT": 1}, "explain": "Hands-on construction and technology excite you."},
+            {"label": "Painting, playing music or crafting", "scores": {"Arts": 2}, "explain": "Artistic creation brings you joy."},
+            {"label": "Organizing events or leading a volunteer team", "scores": {"Management": 2}, "explain": "You enjoy coordinating people and activities."},
+        ],
     },
     {
-        "question": "In my free time, I enjoy:",
-        "options": [
-            {"text": "Building or fixing things", "scores": {"Engineering": 3, "IT": 1}},
-            {"text": "Drawing, painting, or creating art", "scores": {"Arts": 3}},
-            {"text": "Planning events or organizing things", "scores": {"Management": 3}},
-            {"text": "Reading scientific articles or experiments", "scores": {"Science": 3}}
-        ]
+        "q": "3) What school subject did you enjoy most?",
+        "opts": [
+            {"label": "Math and physics", "scores": {"Engineering": 2, "Science": 1}, "explain": "You enjoy quantitative problem solving."},
+            {"label": "Literature, art, or music", "scores": {"Arts": 2}, "explain": "You connect with language and aesthetics."},
+            {"label": "Computer science or coding", "scores": {"IT": 2, "Engineering": 1}, "explain": "You like logical systems and automation."},
+            {"label": "Biology and chemistry", "scores": {"Science": 2}, "explain": "You are drawn to living systems and experiments."},
+        ],
     },
     {
-        "question": "I'm most comfortable working with:",
-        "options": [
-            {"text": "Tools and machinery", "scores": {"Engineering": 3}},
-            {"text": "Creative software and design tools", "scores": {"Arts": 2, "IT": 2}},
-            {"text": "Spreadsheets and organizational tools", "scores": {"Management": 3}},
-            {"text": "Laboratory equipment", "scores": {"Science": 3}}
-        ]
+        "q": "4) How do you prefer to work?",
+        "opts": [
+            {"label": "On long technical projects that require precision", "scores": {"Engineering": 2, "Science": 1}, "explain": "You value depth and meticulous work."},
+            {"label": "On creative short-term projects with fast feedback", "scores": {"Arts": 2}, "explain": "You like variety and expressive output."},
+            {"label": "Leading a team and coordinating deliveries", "scores": {"Management": 2}, "explain": "You prefer leadership and alignment."},
+            {"label": "Building software or scripts that automate tasks", "scores": {"IT": 2}, "explain": "You enjoy solving problems with code."},
+        ],
     },
     {
-        "question": "My problem-solving approach is:",
-        "options": [
-            {"text": "Practical and hands-on", "scores": {"Engineering": 3}},
-            {"text": "Creative and innovative", "scores": {"Arts": 3, "Management": 1}},
-            {"text": "Strategic and organized", "scores": {"Management": 3}},
-            {"text": "Analytical and research-based", "scores": {"Science": 3, "IT": 1}}
-        ]
+        "q": "5) Which tool would you most enjoy learning deeply?",
+        "opts": [
+            {"label": "CAD and prototyping tools", "scores": {"Engineering": 2}, "explain": "You like designing and prototyping physical things."},
+            {"label": "Digital painting or 3D art software", "scores": {"Arts": 2}, "explain": "You want to develop creative technical skills."},
+            {"label": "Project management platforms and people skills", "scores": {"Management": 2}, "explain": "You want to organize teams and projects."},
+            {"label": "Databases, cloud platforms or programming languages", "scores": {"IT": 2, "Science": 1}, "explain": "You are interested in systems and data."},
+        ],
     },
     {
-        "question": "I value work that:",
-        "options": [
-            {"text": "Creates tangible results", "scores": {"Engineering": 3}},
-            {"text": "Expresses creativity and emotion", "scores": {"Arts": 3}},
-            {"text": "Involves leadership and decision-making", "scores": {"Management": 3}},
-            {"text": "Advances knowledge and discovery", "scores": {"Science": 3}}
-        ]
+        "q": "6) In a team, what role do you naturally take?",
+        "opts": [
+            {"label": "The technical problem-solver", "scores": {"Engineering": 2, "IT": 1}, "explain": "You jump to fix technical challenges."},
+            {"label": "The creative idea person", "scores": {"Arts": 2}, "explain": "You bring fresh, creative perspectives."},
+            {"label": "The organizer who delegates and tracks progress", "scores": {"Management": 2}, "explain": "You keep things moving and aligned."},
+            {"label": "The researcher who collects evidence and tests", "scores": {"Science": 2}, "explain": "You validate ideas through testing."},
+        ],
     },
     {
-        "question": "When faced with a challenge, I:",
-        "options": [
-            {"text": "Build a prototype or model", "scores": {"Engineering": 3, "IT": 1}},
-            {"text": "Brainstorm creative solutions", "scores": {"Arts": 3}},
-            {"text": "Develop a step-by-step plan", "scores": {"Management": 3}},
-            {"text": "Research and gather data", "scores": {"Science": 3}}
-        ]
+        "q": "7) Which of these outcomes would feel most rewarding?",
+        "opts": [
+            {"label": "A durable product or structure that works reliably", "scores": {"Engineering": 2}, "explain": "You value robustness and function."},
+            {"label": "An emotional, beautiful piece that moves people", "scores": {"Arts": 2}, "explain": "You value expression and audience impact."},
+            {"label": "A smoothly run team that met its goals", "scores": {"Management": 2}, "explain": "You value coordination and results."},
+            {"label": "A discovery or finding that advances knowledge", "scores": {"Science": 2}, "explain": "You value insight and evidence."},
+        ],
     },
     {
-        "question": "I'm most interested in careers that:",
-        "options": [
-            {"text": "Design and build infrastructure", "scores": {"Engineering": 3}},
-            {"text": "Create artistic content", "scores": {"Arts": 3}},
-            {"text": "Manage people and projects", "scores": {"Management": 3}},
-            {"text": "Explore scientific phenomena", "scores": {"Science": 3}}
-        ]
+        "q": "8) When learning, you prefer:",
+        "opts": [
+            {"label": "Step-by-step practical tutorials", "scores": {"IT": 2, "Engineering": 1}, "explain": "You like hands-on guided learning."},
+            {"label": "Open-ended creative assignments", "scores": {"Arts": 2}, "explain": "You learn by exploring and expressing."},
+            {"label": "Case studies and leadership scenarios", "scores": {"Management": 2}, "explain": "You learn by seeing systems and decisions."},
+            {"label": "Research papers and experiments", "scores": {"Science": 2}, "explain": "You favor methodical and evidence-driven study."},
+        ],
     },
     {
-        "question": "My ideal work environment is:",
-        "options": [
-            {"text": "Construction site or workshop", "scores": {"Engineering": 3}},
-            {"text": "Studio or creative space", "scores": {"Arts": 3}},
-            {"text": "Office with meeting rooms", "scores": {"Management": 3}},
-            {"text": "Laboratory or research facility", "scores": {"Science": 3}}
-        ]
+        "q": "9) Which environment sounds best?",
+        "opts": [
+            {"label": "A lab or field site running experiments", "scores": {"Science": 2}, "explain": "You like investigative, empirical settings."},
+            {"label": "A studio or creative workshop", "scores": {"Arts": 2}, "explain": "You thrive in expressive and flexible spaces."},
+            {"label": "A product development floor with machines and tools", "scores": {"Engineering": 2}, "explain": "You enjoy making and improving products."},
+            {"label": "A fast-paced office with servers and code", "scores": {"IT": 2}, "explain": "You prefer tech-driven environments."},
+        ],
     },
     {
-        "question": "I enjoy working with:",
-        "options": [
-            {"text": "Machines and mechanical systems", "scores": {"Engineering": 3}},
-            {"text": "Colors, shapes, and designs", "scores": {"Arts": 3}},
-            {"text": "Teams and organizations", "scores": {"Management": 3}},
-            {"text": "Data and experiments", "scores": {"Science": 3, "IT": 1}}
-        ]
+        "q": "10) Which task would you volunteer for?",
+        "opts": [
+            {"label": "Fixing a malfunctioning system", "scores": {"Engineering": 2, "IT": 1}, "explain": "You enjoy troubleshooting and repair."},
+            {"label": "Creating promotional visuals or a brand", "scores": {"Arts": 2}, "explain": "You enjoy crafting a visual message."},
+            {"label": "Leading a cross-team initiative", "scores": {"Management": 2}, "explain": "You enjoy rallying people around goals."},
+            {"label": "Designing an experiment to test an idea", "scores": {"Science": 2}, "explain": "You prefer planned inquiry and measurement."},
+        ],
     },
     {
-        "question": "My strength is:",
-        "options": [
-            {"text": "Technical problem-solving", "scores": {"Engineering": 3, "IT": 2}},
-            {"text": "Creative thinking", "scores": {"Arts": 3}},
-            {"text": "Organization and planning", "scores": {"Management": 3}},
-            {"text": "Analytical thinking", "scores": {"Science": 3}}
-        ]
+        "q": "11) What kind of feedback motivates you most?",
+        "opts": [
+            {"label": "Technical correctness and performance metrics", "scores": {"Engineering": 2, "Science": 1}, "explain": "You value measurable excellence."},
+            {"label": "Emotional reactions and audience responses", "scores": {"Arts": 2}, "explain": "You are driven by human connection."},
+            {"label": "Team success and stakeholder praise", "scores": {"Management": 2}, "explain": "You value collaborative achievement."},
+            {"label": "Functional reliability and uptime", "scores": {"IT": 2}, "explain": "You are motivated by system stability."},
+        ],
     },
     {
-        "question": "I get excited about:",
-        "options": [
-            {"text": "New technologies and inventions", "scores": {"Engineering": 2, "IT": 2, "Science": 1}},
-            {"text": "Art exhibitions and creative works", "scores": {"Arts": 3}},
-            {"text": "Business strategies and market trends", "scores": {"Management": 3}},
-            {"text": "Scientific discoveries", "scores": {"Science": 3}}
-        ]
+        "q": "12) When reading about careers, you get most excited by:",
+        "opts": [
+            {"label": "Stories of invention and large-scale infrastructure", "scores": {"Engineering": 2}, "explain": "You enjoy creating things that scale."},
+            {"label": "Profiles of artists and creators who moved people", "scores": {"Arts": 2}, "explain": "Human expression inspires you."},
+            {"label": "Leaders who turned teams into high-performance units", "scores": {"Management": 2}, "explain": "Leadership journeys interest you."},
+            {"label": "Researchers who discovered new phenomena", "scores": {"Science": 2}, "explain": "Discovery and new knowledge compel you."},
+            {"label": "Engineers who built impactful software systems", "scores": {"IT": 2}, "explain": "Systems and software innovation excite you."},
+        ],
     },
     {
-        "question": "I prefer tasks that:",
-        "options": [
-            {"text": "Involve hands-on building", "scores": {"Engineering": 3}},
-            {"text": "Allow creative expression", "scores": {"Arts": 3}},
-            {"text": "Involve coordination and management", "scores": {"Management": 3}},
-            {"text": "Require detailed analysis", "scores": {"Science": 3, "IT": 1}}
-        ]
+        "q": "13) Which word describes you best?",
+        "opts": [
+            {"label": "Analytical", "scores": {"Engineering": 2, "Science": 1}, "explain": "You think logically and break problems down."},
+            {"label": "Expressive", "scores": {"Arts": 2}, "explain": "You communicate with style and feeling."},
+            {"label": "Organized", "scores": {"Management": 2}, "explain": "You bring clarity and structure."},
+            {"label": "Curious", "scores": {"Science": 2, "IT": 1}, "explain": "You want to learn how things work."},
+        ],
     },
     {
-        "question": "My ideal project would:",
-        "options": [
-            {"text": "Solve a practical engineering problem", "scores": {"Engineering": 3}},
-            {"text": "Create something beautiful or artistic", "scores": {"Arts": 3}},
-            {"text": "Improve organizational efficiency", "scores": {"Management": 3}},
-            {"text": "Answer a scientific question", "scores": {"Science": 3}}
-        ]
+        "q": "14) What's your tolerance for ambiguity in projects?",
+        "opts": [
+            {"label": "Low — I like clear specs and constraints", "scores": {"Engineering": 2, "Management": 1}, "explain": "You prefer well-defined problems."},
+            {"label": "High — I thrive with open briefs", "scores": {"Arts": 2}, "explain": "You enjoy shaping vague briefs into ideas."},
+            {"label": "Moderate — I set milestones and adapt", "scores": {"Management": 2}, "explain": "You balance structure with flexibility."},
+            {"label": "I enjoy exploring unknowns to find answers", "scores": {"Science": 2}, "explain": "You embrace open-ended inquiry."},
+        ],
     },
     {
-        "question": "I'm most proud of my ability to:",
-        "options": [
-            {"text": "Build or fix complex systems", "scores": {"Engineering": 3, "IT": 1}},
-            {"text": "Create original artwork or designs", "scores": {"Arts": 3}},
-            {"text": "Lead and organize effectively", "scores": {"Management": 3}},
-            {"text": "Understand complex concepts", "scores": {"Science": 3}}
-        ]
-    }
+        "q": "15) How do you imagine your ideal career in 10 years?",
+        "opts": [
+            {"label": "Leading technical projects or building products", "scores": {"Engineering": 2, "Management": 1}, "explain": "You want to shape technical outcomes and possibly lead teams."},
+            {"label": "Being a recognized creative professional", "scores": {"Arts": 2}, "explain": "You aspire to be known for your creative work."},
+            {"label": "Running teams or businesses", "scores": {"Management": 2}, "explain": "You see yourself steering organizations."},
+            {"label": "Advancing knowledge or solving scientific challenges", "scores": {"Science": 2}, "explain": "You want to contribute to discovery."},
+            {"label": "Building complex software systems and products", "scores": {"IT": 2}, "explain": "You foresee a career in technology and systems."},
+        ],
+    },
 ]
 
-def calculate_scores():
-    """Calculate scores based on answers"""
-    scores = {category: 0 for category in category_colors.keys()}
-    
-    for question_index, answer_index in st.session_state.answers.items():
-        option = questions[question_index]['options'][answer_index]
-        for category, points in option['scores'].items():
-            scores[category] += points
-    
-    return scores
+# ----------------------------
+# Helpers
+# ----------------------------
+def init_state():
+    # Ensure every question key exists in session_state
+    for i in range(len(QUESTIONS)):
+        key = f"q{i+1}"
+        if key not in st.session_state:
+            st.session_state[key] = None
+    if "results" not in st.session_state:
+        st.session_state["results"] = None
 
-def create_radar_chart(scores):
-    """Create a radar chart visualization"""
-    try:
-        categories = list(scores.keys())
-        values = list(scores.values())
-        
-        # Normalize values for better visualization
-        max_val = max(values) if max(values) > 0 else 1
-        normalized_values = [v/max_val * 100 for v in values]
-        
-        # Create radar chart using matplotlib
-        angles = np.linspace(0, 2*np.pi, len(categories), endpoint=False).tolist()
-        angles += angles[:1]  # Complete the circle
-        normalized_values += normalized_values[:1]
-        
-        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
-        
-        # Plot the radar chart
-        ax.fill(angles, normalized_values, color='rgba(102, 126, 234, 0.3)', alpha=0.7)
-        ax.plot(angles, normalized_values, color='#667eea', linewidth=2)
-        
-        # Add category labels
-        ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(categories)
-        
-        # Customize the chart
-        ax.set_ylim(0, 100)
-        ax.set_yticks([25, 50, 75, 100])
-        ax.set_yticklabels(['25%', '50%', '75%', '100%'])
-        ax.grid(True, alpha=0.3)
-        
-        plt.tight_layout()
-        return fig
-    except Exception as e:
-        st.error(f"Error creating radar chart: {e}")
-        return None
 
-def display_results():
-    """Display quiz results with enhanced visuals"""
-    scores = calculate_scores()
-    max_score = max(scores.values()) if max(scores.values()) > 0 else 1
-    top_categories = [cat for cat, score in scores.items() if score == max_score]
-    
-    st.markdown("""
-    <div class="header">
-        <h1 style="color: #000000; margin-bottom: 1rem;">🎯 Your Career Interest Results</h1>
-        <p style="color: #666666; font-size: 1.2rem;">Based on your answers, here's your comprehensive career profile analysis</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Top recommendation with better styling
-    st.markdown(f"""
-    <div class="result-card" style="border-left-color: {category_colors[top_categories[0]]};">
-        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-            <div style="font-size: 3rem; margin-right: 1rem;">{category_emojis[top_categories[0]]}</div>
-            <div>
-                <h2 style="color: #000000; margin: 0;">🌟 Top Recommendation</h2>
-                <h3 style="color: {category_colors[top_categories[0]]}; margin: 0.5rem 0;">{top_categories[0]}</h3>
-            </div>
-        </div>
-        <p style="color: #000000; font-size: 1.1rem; line-height: 1.6;">
-            Your answers show strong alignment with <strong>{top_categories[0].lower()}</strong> careers. 
-            You demonstrated exceptional skills and interests that are highly valuable in this field.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Radar chart visualization
-    st.markdown("""
-    <div class="radar-chart-container">
-        <h3 style="color: #000000; text-align: center; margin-bottom: 1rem;">📈 Your Career Interest Profile</h3>
-    """, unsafe_allow_html=True)
-    
-    radar_fig = create_radar_chart(scores)
-    if radar_fig:
-        st.pyplot(radar_fig)
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Score breakdown with enhanced progress bars
-    st.markdown("""
-    <div class="result-card">
-        <h2 style="color: #000000; margin-bottom: 1.5rem;">📊 Detailed Score Breakdown</h2>
-        <p style="color: #666666; margin-bottom: 2rem;">Here's how you scored across different career categories:</p>
-    """, unsafe_allow_html=True)
-    
-    for category, score in sorted(scores.items(), key=lambda x: x[1], reverse=True):
-        percentage = (score / 45) * 100  # Max possible score is 45 (3*15 questions)
-        
-        st.markdown(f"""
-        <div style="margin-bottom: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span style="font-size: 1.2rem; font-weight: 600; color: #000000;">
-                    {category_emojis[category]} {category}
-                </span>
-                <span style="font-size: 1.1rem; font-weight: 600; color: {category_colors[category]};">{score} points</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: {percentage}%; background: {category_colors[category]};">
-                    <span class="progress-text">{percentage:.1f}%</span>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Suggested careers with better styling
-    st.markdown(f"""
-    <div class="result-card">
-        <h2 style="color: #000000; margin-bottom: 1.5rem;">💼 Suggested Career Paths for {top_categories[0]}</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
-    """, unsafe_allow_html=True)
-    
-    for career in career_suggestions[top_categories[0]][:6]:
-        st.markdown(f"""
-        <div class="career-item" style="border-left-color: {category_colors[top_categories[0]]};">
-            <div style="font-weight: 600; color: #000000; margin-bottom: 0.3rem;">{career}</div>
-            <div style="font-size: 0.9rem; color: #666666;">Great match for your skills and interests</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("</div></div>", unsafe_allow_html=True)
-    
-    # Answer analysis with enhanced styling
-    st.markdown("""
-    <div class="result-card">
-        <h2 style="color: #000000; margin-bottom: 1.5rem;">🔍 Detailed Answer Analysis</h2>
-        <p style="color: #666666; margin-bottom: 2rem;">Here's what your choices reveal about your skills and interests:</p>
-    """, unsafe_allow_html=True)
-    
-    for i, (q_index, a_index) in enumerate(st.session_state.answers.items()):
-        question = questions[q_index]
-        option = question['options'][a_index]
-        
-        reasons = []
-        skill_emojis = []
-        for cat, points in option['scores'].items():
-            if points > 0:
-                reasons.append(f"{cat.lower()} skills")
-                skill_emojis.append(category_emojis[cat])
-        
-        st.markdown(f"""
-        <div class="question-box">
-            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-                <div style="background: {category_colors['Engineering']}; color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; margin-right: 1rem;">
-                    {i+1}
-                </div>
-                <h4 style="color: #000000; margin: 0;">{question['question']}</h4>
-            </div>
-            <div style="background: #ffffff; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-                <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">Your choice:</div>
-                <div style="color: #667eea; font-weight: 500;">{option['text']}</div>
-            </div>
-            <div style="background: #f8f9fa; padding: 1rem; border-radius: 10px;">
-                <div style="color: #000000; font-weight: 600; margin-bottom: 0.5rem;">This suggests:</div>
-                <div style="color: #000000;">
-                    You have strengths in {', '.join(reasons)} 
-                    <span style="font-size: 1.2rem; margin-left: 0.5rem;">{' '.join(skill_emojis)}</span>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Reset button with better styling
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("🔄 Take Quiz Again", use_container_width=True, type="primary"):
-            st.session_state.current_question = 0
-            st.session_state.answers = {}
-            st.session_state.show_results = False
-            st.session_state.scores = {category: 0 for category in category_colors.keys()}
-            st.rerun()
+def compute_scores(answers: Dict[str, int]) -> Dict[str, int]:
+    totals = {c: 0 for c in CATEGORIES}
+    for q_idx, opt_idx in answers.items():
+        if opt_idx is None:
+            continue
+        question = QUESTIONS[q_idx]
+        option = question["opts"][opt_idx]
+        for cat, pts in option["scores"].items():
+            totals[cat] = totals.get(cat, 0) + pts
+    return totals
 
-def main():
-    st.markdown('<div class="main">', unsafe_allow_html=True)
-    st.markdown('<div class="quiz-container">', unsafe_allow_html=True)
-    
-    if st.session_state.show_results:
-        display_results()
-    else:
-        # Display header with enhanced styling
-        st.markdown("""
-        <div class="header">
-            <h1 style="color: #000000; margin-bottom: 1rem; font-size: 2.5rem;">🎯 Career Interest Quiz</h1>
-            <p style="color: #666666; font-size: 1.3rem; margin-bottom: 2rem;">Discover your ideal career path with this comprehensive 15-question assessment</p>
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                        padding: 15px 30px; border-radius: 25px; color: white; 
-                        display: inline-block; margin-top: 1rem; font-size: 1.2rem; font-weight: 600;">
-                Question {}/15
-            </div>
-        </div>
-        """.format(st.session_state.current_question + 1), unsafe_allow_html=True)
-        
-        # Display current question with enhanced styling
-        current_q = questions[st.session_state.current_question]
-        
-        st.markdown(f"""
-        <div class="question-box">
-            <h2 style="color: #000000; margin-bottom: 1rem; font-size: 1.8rem;">{current_q['question']}</h2>
-            <div style="color: #666666; font-size: 1.1rem;">Select the option that best describes you:</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Display options with enhanced styling
-        for i, option in enumerate(current_q['options']):
-            is_selected = st.session_state.answers.get(st.session_state.current_question) == i
-            
-            if st.button(
-                option['text'], 
-                key=f"option_{i}", 
-                use_container_width=True,
-                type="primary" if is_selected else "secondary"
-            ):
-                st.session_state.answers[st.session_state.current_question] = i
-                if st.session_state.current_question < len(questions) - 1:
-                    st.session_state.current_question += 1
-                else:
-                    st.session_state.show_results = True
-                st.rerun()
-        
-        # Enhanced progress bar
-        progress = (st.session_state.current_question + 1) / len(questions)
-        st.markdown(f"""
-        <div style="margin: 2rem 0;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span style="color: #000000; font-weight: 500;">Progress</span>
-                <span style="color: #667eea; font-weight: 600;">{int(progress * 100)}% Complete</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        st.progress(progress)
-        
-        # Navigation buttons
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col1:
-            if st.session_state.current_question > 0:
-                if st.button("← Previous", use_container_width=True):
-                    st.session_state.current_question -= 1
-                    st.rerun()
-        with col3:
-            if st.session_state.current_question == len(questions) - 1 and st.session_state.current_question in st.session_state.answers:
-                if st.button("Submit Results →", type="primary", use_container_width=True):
-                    st.session_state.show_results = True
-                    st.rerun()
-    
+
+def build_dynamic_explanation(q_idx: int, opt_idx: int) -> str:
+    q = QUESTIONS[q_idx]
+    opt = q["opts"][opt_idx]
+    # Which categories got points from this option
+    cats = [cat for cat, pts in opt["scores"].items() if pts > 0]
+    cats_str = ", ".join([f"{EMOJI.get(c,'')} {c}" for c in cats])
+    suggested = []
+    for c in cats:
+        suggested.extend(SUGGESTED_CAREERS.get(c, [])[:3])
+    # Deduplicate suggested careers while preserving order
+    seen = set()
+    suggested_unique = [s for s in suggested if not (s in seen or seen.add(s))]
+    suggested_str = ", ".join(suggested_unique[:5])
+    explanation = (
+        f"You chose: \"{opt['label']}\" — {opt.get('explain','')}\n\n"
+        f"→ This maps to: {cats_str}.\n"
+        f"→ What it indicates: interest/skills in {', '.join(cats)}.\n"
+        f"→ Suggested career directions: {suggested_str}."
+    )
+    return explanation
+
+
+def format_score_cards(totals: Dict[str, int], top_cats: List[str]):
+    # Return list of dict for display
+    cards = []
+    max_score = max(totals.values()) if totals else 0
+    for cat in CATEGORIES:
+        score = totals.get(cat, 0)
+        highlight = cat in top_cats
+        pct = int((score / max_score * 100) if max_score > 0 else 0)
+        cards.append(
+            {
+                "category": cat,
+                "emoji": EMOJI.get(cat, ""),
+                "score": score,
+                "pct": pct,
+                "suggested": SUGGESTED_CAREERS.get(cat, [])[:3],
+                "highlight": highlight,
+            }
+        )
+    return cards
+
+
+# ----------------------------
+# App layout
+# ----------------------------
+init_state()
+
+with st.container():
+    st.markdown('<div style="display:flex;align-items:center;gap:14px">', unsafe_allow_html=True)
+    st.markdown('<div style="flex:1">', unsafe_allow_html=True)
+    st.markdown('<h1 class="title">Career Compass — 15-question Interest Quiz 🧭</h1>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="text-align:right;"><span class="badge">Quick • Visual • Personalized</span></div>',
+        unsafe_allow_html=True,
+    )
     st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<p class="small">Answer 15 short questions — honest first answers give the best hint about careers that fit your interests and strengths.</p>', unsafe_allow_html=True)
 
-if __name__ == "__main__":
-    main()
+st.write("")  # spacer
+
+# Display question cards in a two-column layout for readability
+cols = st.columns(2)
+for i, q in enumerate(QUESTIONS):
+    col = cols[i % 2]
+    key = f"q{i+1}"
+    with col:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown(f"<strong style='font-size:16px'>Q{i+1}.</strong> <span style='margin-left:8px'>{q['q']}</span>", unsafe_allow_html=True)
+        # Build options labels
+        option_labels = [opt["label"] for opt in q["opts"]]
+        # Use radio buttons with a clear key
+        selected = st.radio("", option_labels, index=st.session_state[key] if st.session_state[key] is not None else 0, key=key, label_visibility="collapsed")
+        # save index
+        st.session_state[key] = option_labels.index(selected)
+        st.markdown("</div>", unsafe_allow_html=True)
+        st.write("")  # small gap
+
+st.write("")  # spacer
+
+# Submit area
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown("<strong>Ready?</strong> Click Submit when you've answered all questions to see your personalized results.", unsafe_allow_html=True)
+all_answered = all(st.session_state[f"q{i+1}"] is not None for i in range(len(QUESTIONS)))
+if not all_answered:
+    st.warning("Please answer every question before submitting. (Scroll up to finish any unanswered questions.)")
+col1, col2 = st.columns([1, 2])
+with col1:
+    if st.button("Submit • Show Results", use_container_width=True):
+        if not all_answered:
+            st.warning("You must answer all questions before submitting.")
+        else:
+            # gather answers mapping q_idx -> opt_idx
+            answers = {i: st.session_state[f"q{i+1}"] for i in range(len(QUESTIONS))}
+            totals = compute_scores(answers)
+            # Determine top recommended category/cats
+            max_score = max(totals.values())
+            top_cats = [cat for cat, s in totals.items() if s == max_score]
+            # Build per-question explanations
+            per_q_explanations = []
+            for q_idx, opt_idx in answers.items():
+                expl = build_dynamic_explanation(q_idx, opt_idx)
+                per_q_explanations.append({"q": QUESTIONS[q_idx]["q"], "explanation": expl})
+            # Save in session_state
+            st.session_state["results"] = {
+                "totals": totals,
+                "top": top_cats,
+                "per_q": per_q_explanations,
+            }
+            st.experimental_rerun()
+with col2:
+    st.write("")  # intentionally blank to align button
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ----------------------------
+# Show results if available
+# ----------------------------
+if st.session_state.get("results"):
+    results = st.session_state["results"]
+    totals = results["totals"]
+    top_cats = results["top"]
+
+    st.write("")  # spacer
+    # Header result card
+    st.markdown('<div class="result-card">', unsafe_allow_html=True)
+    st.markdown('<div style="display:flex;justify-content:space-between;align-items:center">', unsafe_allow_html=True)
+    left, right = st.columns([3, 1])
+    with left:
+        if len(top_cats) == 1:
+            primary = top_cats[0]
+            st.markdown(f"<div style='display:flex;align-items:center;gap:12px'><div class='emoji'>{EMOJI.get(primary)}</div><div><div class='big-num'>{primary}</div><div class='muted'>Top recommended career area for you</div></div></div>", unsafe_allow_html=True)
+            st.markdown(f"<p class='small'>Why: Your answers collectively show a stronger tilt toward <strong>{primary}</strong>. Here are some roles you might explore: <strong>{', '.join(SUGGESTED_CAREERS.get(primary, [])[:4])}</strong>.</p>", unsafe_allow_html=True)
+        else:
+            # tie
+            tops = ", ".join([f"{EMOJI.get(c,'')}{c}" for c in top_cats])
+            st.markdown(f"<div style='display:flex;flex-direction:column;gap:6px'><div class='big-num'>Multiple strong fits</div><div class='muted'>You have a tie between: {tops}</div></div>", unsafe_allow_html=True)
+            # show combined suggestions
+            combined = []
+            for c in top_cats:
+                combined.extend(SUGGESTED_CAREERS.get(c, [])[:3])
+            seen = set()
+            combined_unique = [s for s in combined if not (s in seen or seen.add(s))]
+            st.markdown(f"<p class='small'>Explore careers like: <strong>{', '.join(combined_unique[:6])}</strong>.</p>", unsafe_allow_html=True)
+
+    with right:
+        # Show overall numeric summary
+        total_points = sum(totals.values())
+        st.markdown(f"<div style='text-align:right'><div class='badge'>Total points: {total_points}</div></div>", unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.write("")  # spacer
+
+    # Score cards grid
+    cards = format_score_cards(totals, top_cats)
+    card_cols = st.columns(5)
+    for i, card in enumerate(cards):
+        col = card_cols[i % 5]
+        with col:
+            highlight_style = "border: 2px solid rgba(255,255,255,0.08);" if card["highlight"] else ""
+            st.markdown(f"<div class='card' style='text-align:center; {highlight_style}'>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:20px;font-weight:700'>{card['emoji']} {card['category']}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size:28px;font-weight:800;margin-top:6px'>{card['score']}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='small'>Top roles: {', '.join(card['suggested'])}</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    st.write("")  # spacer
+
+    # Bar chart for breakdown
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown("<strong>Full score breakdown</strong>", unsafe_allow_html=True)
+    df = pd.DataFrame({"Category": list(totals.keys()), "Points": list(totals.values())})
+    df = df.sort_values("Points", ascending=False)
+    st.bar_chart(data=df.set_index("Category"))
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.write("")  # spacer
+
+    # Per-question explanations (collapsible)
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown("<strong>Why each answer matters</strong>", unsafe_allow_html=True)
+    for i, pq in enumerate(results["per_q"]):
+        with st.expander(f"Q{i+1}: {QUESTIONS[i]['q']}", expanded=False):
+            st.markdown(f"<div class='explain'>{pq['explanation']}</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.write("")  # spacer
+
+    # Next steps and suggestions
+    st.markdown(
+        """
+        <div class="card">
+        <strong>Next steps</strong>
+        <ul class="small">
+          <li>Explore the suggested roles above — try informational interviews or short courses.</li>
+          <li>If you had a tie, consider projects that combine those areas (e.g., UX engineering = Engineering + Arts).</li>
+          <li>Use this quiz as a directional guide — not a definitive label. Your experience and values matter too.</li>
+        </ul>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.write("")  # spacer
+
+    # Allow reset
+    if st.button("Reset answers & retake quiz"):
+        for i in range(len(QUESTIONS)):
+            st.session_state[f"q{i+1}"] = None
+        st.session_state["results"] = None
+        st.experimental_rerun()
