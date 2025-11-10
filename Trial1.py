@@ -1,87 +1,77 @@
-import turtle
-import math
-import random
+import streamlit as st
 
-# Set up the screen
-screen = turtle.Screen()
-screen.bgcolor("black")
-screen.title("I Love You!!")
-screen.setup(width=800, height=700)
-screen.tracer(0)  # turn off automatic animation
+st.set_page_config(page_title="I Love You ❤️", page_icon="❤️", layout="centered")
 
-# Create the turtle for drawing the heart
-heart = turtle.Turtle()
-heart.hideturtle()
-heart.speed(0)
-heart.pensize(2)
+# Hide Streamlit’s default UI for clean look
+st.markdown("""
+    <style>
+    #MainMenu, footer, header {visibility: hidden;}
+    body {
+        background-color: black;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Separate turtle for writing text
-writer = turtle.Turtle()
-writer.hideturtle()
-writer.speed(0)
-writer.penup()
+# Heart + glowing animation in HTML + CSS
+st.markdown("""
+    <style>
+    @keyframes heartbeat {
+      0% {transform: scale(1);}
+      14% {transform: scale(1.3);}
+      28% {transform: scale(1);}
+      42% {transform: scale(1.3);}
+      70% {transform: scale(1);}
+    }
 
-# Create a few twinkle stars in the background (draw once)
-stars = []
-for _ in range(40):
-    sx = random.randint(-380, 380)
-    sy = random.randint(-320, 320)
-    size = random.uniform(1.0, 3.0)
-    stars.append((sx, sy, size))
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 40px 20px rgba(255, 0, 0, 0.3); }
+      50% { box-shadow: 0 0 70px 35px rgba(255, 80, 150, 0.6); }
+    }
 
-def draw_stars():
-    star_t = turtle.Turtle()
-    star_t.hideturtle()
-    star_t.speed(0)
-    star_t.penup()
-    for (sx, sy, s) in stars:
-        star_t.goto(sx, sy)
-        # small flicker by randomizing short-lived brightness when drawn
-        star_t.dot(int(s * 2 + random.choice([0, 1, 2])), "white")
+    .heart {
+      position: relative;
+      width: 150px;
+      height: 135px;
+      margin: 100px auto;
+      background-color: red;
+      transform: rotate(-45deg);
+      animation: heartbeat 1.5s infinite ease-in-out, glow 2s infinite ease-in-out;
+    }
 
-# Heart drawing function (scales cleanly)
-def draw_heart(x, y, size, color):
-    heart.penup()
-    heart.goto(x, y)
-    heart.setheading(0)
-    heart.pendown()
-    heart.color(color)
-    heart.begin_fill()
+    .heart::before, .heart::after {
+      content: "";
+      position: absolute;
+      width: 150px;
+      height: 135px;
+      background-color: red;
+      border-radius: 50%;
+    }
 
-    # Classic heart made from two circular arcs and straight edges
-    heart.left(140)
-    heart.forward(size * 1.0)
+    .heart::before {
+      top: -75px;
+      left: 0;
+    }
 
-    # The radius is proportional to size. Negative radius to make arcs curve inward.
-    heart.circle(-size * 0.6, 200)
-    heart.left(120)
-    heart.circle(-size * 0.6, 200)
-    heart.forward(size * 1.0)
-    heart.end_fill()
-    heart.setheading(0)
-    heart.penup()
+    .heart::after {
+      left: 75px;
+      top: 0;
+    }
 
-def write_text(x, y, text, color, font_size):
-    writer.clear()
-    writer.goto(x, y)
-    writer.color(color)
-    writer.write(text, align="center", font=("Arial", font_size, "bold"))
+    h1 {
+      color: white;
+      text-align: center;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+      font-size: 3em;
+      text-shadow: 0 0 20px #ff99cc, 0 0 40px #ff3366;
+      animation: glowText 2s ease-in-out infinite alternate;
+    }
 
-# Animation state
-size = 70            # nominal heart "radius" scale
-min_size = 70
-max_size = 140
-growing = True
-hue_index = 0        # used to change color over time
+    @keyframes glowText {
+      from { text-shadow: 0 0 10px #ff3366, 0 0 20px #ff6699; }
+      to { text-shadow: 0 0 20px #ff99cc, 0 0 40px #ff3366; }
+    }
+    </style>
 
-def tween_color(i):
-    # simple smooth color change between red -> hotpink -> red
-    # returns an HTML-style color string that turtle accepts (tk color names or hex)
-    # We'll interpolate between two RGB colors:
-    r1, g1, b1 = (255, 30, 60)   # red-ish
-    r2, g2, b2 = (255, 90, 140)  # pink-ish
-    t = (math.sin(i * 0.06) + 1) / 2  # oscillates 0..1 smoothly
-    r = int(r1 + (r2 - r1) * t)
-    g = int(g1 + (g2 - g1) * t)
-    b = int(b1 + (b2 - b1) * t)
-    retur
+    <div class="heart"></div>
+    <h1>I Love You!! 💖</h1>
+""", unsafe_allow_html=True)
