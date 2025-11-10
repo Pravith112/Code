@@ -190,6 +190,8 @@ if "index" not in st.session_state:
     st.session_state.index = 0
 if "answers" not in st.session_state:
     st.session_state.answers = []
+if "reasons" not in st.session_state:
+    st.session_state.reasons = []
 if "show_result" not in st.session_state:
     st.session_state.show_result = False
 
@@ -205,6 +207,7 @@ def calculate_scores():
 def reset_quiz():
     st.session_state.index = 0
     st.session_state.answers = []
+    st.session_state.reasons = []
     st.session_state.show_result = False
 
 # ---------------------- MAIN ----------------------
@@ -214,28 +217,32 @@ st.markdown("<p class='subtitle'>Discover your true career domain through rocket
 if not st.session_state.show_result:
     q = questions[st.session_state.index]
     st.markdown(f"<div class='card'><h3>Q{st.session_state.index+1}: {q['question']}</h3>", unsafe_allow_html=True)
+
     for i, (text, score, reason) in enumerate(q["options"]):
-        if st.button(text, key=f"opt{i}"):
+        if st.button(text, key=f"opt{st.session_state.index}_{i}"):
             st.session_state.answers.append(score)
+            st.session_state.reasons.append(reason)
             st.session_state.index += 1
-            st.session_state.reason = reason
+
             if st.session_state.index >= len(questions):
                 st.session_state.show_result = True
+
             st.rerun()
-    progress = (st.session_state.index / len(questions)) * 100
-    st.progress(progress/100)
-    if "reason" in st.session_state:
-        st.markdown(f"<p class='reason'>🧠 Reason: {st.session_state.reason}</p>", unsafe_allow_html=True)
+
+    progress = (st.session_state.index / len(questions))
+    st.progress(progress)
     st.markdown("</div>", unsafe_allow_html=True)
+
 else:
-    # Rocket sequence
+    # 🚀 Animated launch sequence
     st.subheader("🚀 Launching your personalized Quantum Report...")
     p = st.progress(0)
     for i in range(100):
-        p.progress((i+1)/100)
+        p.progress((i + 1) / 100)
         time.sleep(0.02)
+
     st.balloons()
-    st.success("Analysis Complete ✅")
+    st.success("✅ Analysis Complete!")
 
     scores = calculate_scores()
     sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
@@ -245,8 +252,14 @@ else:
     st.write(descriptions[top_category])
     st.write(f"**Key Strengths:** {', '.join(strengths[top_category])}")
     st.write(f"**Possible Career Roles:** {', '.join(roles[top_category])}")
+
     st.write("### 📊 Category Scores:")
     st.bar_chart(pd.DataFrame.from_dict(scores, orient='index', columns=['Score']))
+
+    st.write("### 💬 Your Decision Insights")
+    for i, reason in enumerate(st.session_state.reasons, 1):
+        st.markdown(f"**Q{i} Reason:** {reason}")
+
     st.info("This analysis is based on your responses to the 15-question interest assessment. Each choice reflected traits tied to specific domains — giving you a snapshot of your inner alignment.")
 
     if st.button("🔁 Retake Quiz"):
