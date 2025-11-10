@@ -33,8 +33,8 @@ html_code = """
     animation: glow 2s ease-in-out infinite alternate;
   }
   @keyframes glow {
-    from { text-shadow: 0 0 15px #ff1493, 0 0 30px #ff1493; }
-    to { text-shadow: 0 0 35px #ff66b2, 0 0 70px #ff66b2; }
+    from { text-shadow: 0 0 15px ##FFFFFF, 0 0 30px ##FFFFFF; }
+    to { text-shadow: 0 0 35px ###FFFFFF, 0 0 70px ##FFFFFF; }
   }
 </style>
 </head>
@@ -129,3 +129,4 @@ animate();
 
 # Fullscreen in Streamlit
 components.html(html_code, height=800, scrolling=False)
+
