@@ -26,7 +26,7 @@ html_code = """
     top: 75%;
     width: 100%;
     text-align: center;
-    font-family: 'Brush Script MT', cursive;
+    font-family: 'Great Vibes', cursive;
     font-size: 70px;
     color: white;
     text-shadow: 0 0 25px #ffffff, 0 0 50px #aaaaaa;
@@ -129,3 +129,4 @@ animate();
 """
 
 components.html(html_code, height=900, scrolling=False)
+
