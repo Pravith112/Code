@@ -1,159 +1,165 @@
 import streamlit as st
-import random
 
-st.set_page_config(page_title="I Love You ❤️", page_icon="❤️", layout="centered")
+st.set_page_config(page_title="Matrix Love 💚❤️", page_icon="💚", layout="wide")
 
-# Hide Streamlit chrome
+# Hide Streamlit UI
 st.markdown("""
-<style>
-#MainMenu, footer, header {visibility: hidden;}
-body {
-  background-color: black;
-  overflow: hidden;
-}
-</style>
+    <style>
+    #MainMenu, footer, header {visibility: hidden;}
+    body {
+        margin: 0;
+        overflow: hidden;
+        background: black;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
-# Generate the falling hearts first
-hearts_html = []
-for i in range(25):
-    left = random.randint(0, 100)
-    duration = round(random.uniform(3, 7), 2)
-    delay = round(random.uniform(0, 3), 2)
-    size = random.randint(8, 16)
-    color = random.choice(["#ff4d6d", "#ff758f", "#ff92a5", "#ffb3c1"])
-    hearts_html.append(f"""
-    <div class="small-heart" style="
-      left:{left}%;
-      width:{size}px;
-      height:{size}px;
-      background-color:{color};
-      animation-duration:{duration}s;
-      animation-delay:{delay}s;
-    "></div>""")
+# Combined HTML + CSS animation
+st.markdown("""
+    <style>
+    /* --- Matrix Rain Background --- */
+    body, html {
+        height: 100%;
+        background: black;
+        overflow: hidden;
+        margin: 0;
+    }
 
-# Join them into one string — no print, no preview
-hearts_html = "\n".join(hearts_html)
+    canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        background: black;
+    }
 
-# Now inject everything inside one single markdown (Streamlit-safe)
-st.markdown(f"""
-<style>
-@keyframes softPulse {{
-  0%   {{ transform: scale(1); }}
-  25%  {{ transform: scale(1.05); }}
-  50%  {{ transform: scale(1.12); }}
-  75%  {{ transform: scale(1.05); }}
-  100% {{ transform: scale(1); }}
-}}
+    /* --- Falling Hearts --- */
+    @keyframes fallHearts {
+      0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
 
-@keyframes heartGlow {{
-  0%,100% {{ filter: drop-shadow(0 0 25px rgba(255, 0, 100, 0.8)); }}
-  50%     {{ filter: drop-shadow(0 0 60px rgba(255, 100, 180, 1)); }}
-}}
+    .heart {
+      position: fixed;
+      top: 0;
+      width: 15px;
+      height: 15px;
+      background: #ff4d6d;
+      transform: rotate(-45deg);
+      animation: fallHearts linear infinite;
+      border-radius: 50% 50% 0 0;
+      z-index: 2;
+    }
 
-@keyframes fall {{
-  0% {{
-    transform: translateY(-10vh) translateX(0);
-    opacity: 1;
-  }}
-  100% {{
-    transform: translateY(110vh) translateX(10px);
-    opacity: 0;
-  }}
-}}
+    .heart::before, .heart::after {
+      content: "";
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background: #ff4d6d;
+      border-radius: 50%;
+    }
 
-.container {{
-  position: relative;
-  height: 100vh;
-  width: 100%;
-  overflow: hidden;
-}}
+    .heart::before {
+      top: 0;
+      left: 7.5px;
+    }
 
-.main-heart {{
-  position: absolute;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-45deg);
-  width: 150px;
-  height: 150px;
-  background-color: #ff2b5e;
-  border-radius: 50% 50% 0 0;
-  animation: softPulse 2s infinite ease-in-out, heartGlow 3s infinite ease-in-out;
-}}
+    .heart::after {
+      top: -7.5px;
+      left: 0;
+    }
 
-.main-heart::before,
-.main-heart::after {{
-  content: "";
-  position: absolute;
-  width: 150px;
-  height: 150px;
-  background-color: #ff2b5e;
-  border-radius: 50%;
-}}
+    /* --- Big Center Heart --- */
+    @keyframes pulse {
+      0% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
+      50% { transform: translate(-50%, -50%) rotate(-45deg) scale(1.1); }
+      100% { transform: translate(-50%, -50%) rotate(-45deg) scale(1); }
+    }
 
-.main-heart::before {{
-  top: 0;
-  left: 75px;
-}}
+    .big-heart {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 160px;
+      height: 160px;
+      background: #ff1a4d;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      border-radius: 50% 50% 0 0;
+      animation: pulse 2s infinite ease-in-out;
+      z-index: 3;
+    }
 
-.main-heart::after {{
-  top: -75px;
-  left: 0;
-}}
+    .big-heart::before, .big-heart::after {
+      content: "";
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      background: #ff1a4d;
+      border-radius: 50%;
+    }
 
-h1 {{
-  position: absolute;
-  top: 75%;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  text-align: center;
-  font-family: "Comic Sans MS", cursive, sans-serif;
-  font-size: 3em;
-  text-shadow: 0 0 20px #ff99cc, 0 0 40px #ff3366;
-  animation: glowText 2s ease-in-out infinite alternate;
-}}
+    .big-heart::before {
+      top: 0;
+      left: 80px;
+    }
 
-@keyframes glowText {{
-  from {{ text-shadow: 0 0 10px #ff3366, 0 0 20px #ff6699; }}
-  to   {{ text-shadow: 0 0 20px #ff99cc, 0 0 40px #ff3366; }}
-}}
+    .big-heart::after {
+      top: -80px;
+      left: 0;
+    }
+    </style>
 
-.small-heart {{
-  position: absolute;
-  transform: rotate(-45deg);
-  border-radius: 50% 50% 0 0;
-  animation: fall linear infinite;
-}}
+    <!-- Matrix Canvas -->
+    <canvas id="matrix"></canvas>
 
-.small-heart::before,
-.small-heart::after {{
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-}}
+    <!-- Big Heart -->
+    <div class="big-heart"></div>
 
-.small-heart::before {{
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  height: 100%;
-  background-color: inherit;
-}}
+    <!-- Falling Hearts -->
+    <script>
+    const numHearts = 25;
+    for (let i = 0; i < numHearts; i++) {{
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        heart.style.left = Math.random() * 100 + '%';
+        heart.style.animationDuration = (3 + Math.random() * 5) + 's';
+        heart.style.animationDelay = (Math.random() * 3) + 's';
+        heart.style.background = ['#ff4d6d', '#ff758f', '#ff92a5'][Math.floor(Math.random()*3)];
+        document.body.appendChild(heart);
+    }}
 
-.small-heart::after {{
-  top: -50%;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: inherit;
-}}
-</style>
+    /* --- Matrix Effect --- */
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
 
-<div class="container">
-  {hearts_html}
-  <div class="main-heart"></div>
-  <h1>I Love You!! 💖</h1>
-</div>
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+
+    const letters = '01💖';
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+
+    const drops = [];
+    for (let x = 0; x < columns; x++) drops[x] = 1;
+
+    function draw() {{
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#00ff00';
+        ctx.font = fontSize + 'px monospace';
+
+        for (let i = 0; i < drops.length; i++) {{
+            const text = letters.charAt(Math.floor(Math.random() * letters.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }}
+    }}
+
+    setInterval(draw, 35);
+    </script>
 """, unsafe_allow_html=True)
