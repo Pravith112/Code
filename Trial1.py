@@ -138,18 +138,5 @@ st.markdown("""
     }
     </style>
 
-    <div class="container">
-      <!-- Falling hearts (random positions and durations) -->
-      """ +
-      "\n".join([
-          f'<div class="small-heart" style="left:{i*5+2}%; animation-duration:{2+i%4}s; animation-delay:{i*0.3}s;"></div>'
-          for i in range(20)
-      ]) +
-      """
-      <!-- Main heart -->
-      <div class="main-heart"></div>
+    
 
-      <!-- Text -->
-      <h1>I Love You!! 💖</h1>
-    </div>
-""", unsafe_allow_html=True)
