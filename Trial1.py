@@ -40,7 +40,7 @@ html_code = """
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<div id="text">I LOVE YOU!!!</div>
+<div id="text">I Love You Sanjana!</div>
 
 <script>
 const canvas = document.getElementById("canvas");
@@ -129,4 +129,5 @@ animate();
 """
 
 components.html(html_code, height=900, scrolling=False)
+
 
