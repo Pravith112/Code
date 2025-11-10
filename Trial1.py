@@ -2,62 +2,97 @@ import streamlit as st
 
 st.set_page_config(page_title="I Love You ❤️", page_icon="❤️", layout="centered")
 
-# Hide Streamlit’s default UI for clean look
+# Clean UI
 st.markdown("""
     <style>
     #MainMenu, footer, header {visibility: hidden;}
     body {
         background-color: black;
+        overflow: hidden;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Heart + glowing animation in HTML + CSS
+# Full HTML + CSS magic
 st.markdown("""
     <style>
-    @keyframes heartbeat {
-      0% {transform: scale(1);}
-      14% {transform: scale(1.3);}
-      28% {transform: scale(1);}
-      42% {transform: scale(1.3);}
-      70% {transform: scale(1);}
+    /* --- KEYFRAMES --- */
+
+    /* Smooth heartbeat pulse */
+    @keyframes softPulse {
+      0%   { transform: scale(1); }
+      25%  { transform: scale(1.05); }
+      50%  { transform: scale(1.12); }
+      75%  { transform: scale(1.05); }
+      100% { transform: scale(1); }
     }
 
-    @keyframes glow {
-      0%, 100% { box-shadow: 0 0 40px 20px rgba(255, 0, 0, 0.3); }
-      50% { box-shadow: 0 0 70px 35px rgba(255, 80, 150, 0.6); }
+    /* Glow animation for main heart */
+    @keyframes heartGlow {
+      0%,100% { filter: drop-shadow(0 0 25px rgba(255, 0, 100, 0.8)); }
+      50%     { filter: drop-shadow(0 0 60px rgba(255, 100, 180, 1)); }
     }
 
-    .heart {
+    /* Falling hearts */
+    @keyframes fall {
+      0% {
+        transform: translateY(-10vh) translateX(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) translateX(10px);
+        opacity: 0;
+      }
+    }
+
+    /* --- ELEMENT STYLES --- */
+
+    .container {
       position: relative;
-      width: 150px;
-      height: 135px;
-      margin: 100px auto;
-      background-color: red;
-      transform: rotate(-45deg);
-      animation: heartbeat 1.5s infinite ease-in-out, glow 2s infinite ease-in-out;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
     }
 
-    .heart::before, .heart::after {
+    /* Big heart */
+    .main-heart {
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      width: 150px;
+      height: 150px;
+      background-color: #ff2b5e;
+      border-radius: 50% 50% 0 0;
+      animation: softPulse 2s infinite ease-in-out, heartGlow 3s infinite ease-in-out;
+    }
+
+    .main-heart::before,
+    .main-heart::after {
       content: "";
       position: absolute;
       width: 150px;
-      height: 135px;
-      background-color: red;
+      height: 150px;
+      background-color: #ff2b5e;
       border-radius: 50%;
     }
 
-    .heart::before {
+    .main-heart::before {
+      top: 0;
+      left: 75px;
+    }
+
+    .main-heart::after {
       top: -75px;
       left: 0;
     }
 
-    .heart::after {
-      left: 75px;
-      top: 0;
-    }
-
+    /* I Love You text */
     h1 {
+      position: absolute;
+      top: 75%;
+      left: 50%;
+      transform: translateX(-50%);
       color: white;
       text-align: center;
       font-family: "Comic Sans MS", cursive, sans-serif;
@@ -68,10 +103,53 @@ st.markdown("""
 
     @keyframes glowText {
       from { text-shadow: 0 0 10px #ff3366, 0 0 20px #ff6699; }
-      to { text-shadow: 0 0 20px #ff99cc, 0 0 40px #ff3366; }
+      to   { text-shadow: 0 0 20px #ff99cc, 0 0 40px #ff3366; }
+    }
+
+    /* Small falling hearts */
+    .small-heart {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background-color: #ff4d6d;
+      transform: rotate(-45deg);
+      animation: fall linear infinite;
+      border-radius: 50% 50% 0 0;
+    }
+
+    .small-heart::before,
+    .small-heart::after {
+      content: "";
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background-color: #ff4d6d;
+      border-radius: 50%;
+    }
+
+    .small-heart::before {
+      top: 0;
+      left: 7.5px;
+    }
+
+    .small-heart::after {
+      top: -7.5px;
+      left: 0;
     }
     </style>
 
-    <div class="heart"></div>
-    <h1>I Love You!! 💖</h1>
+    <div class="container">
+      <!-- Falling hearts (random positions and durations) -->
+      """ +
+      "\n".join([
+          f'<div class="small-heart" style="left:{i*5+2}%; animation-duration:{2+i%4}s; animation-delay:{i*0.3}s;"></div>'
+          for i in range(20)
+      ]) +
+      """
+      <!-- Main heart -->
+      <div class="main-heart"></div>
+
+      <!-- Text -->
+      <h1>I Love You!! 💖</h1>
+    </div>
 """, unsafe_allow_html=True)
