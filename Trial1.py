@@ -23,18 +23,18 @@ html_code = """
   }
   #text {
     position: absolute;
-    top: 65%;
+    top: 75%;
     width: 100%;
     text-align: center;
     font-family: 'Brush Script MT', cursive;
     font-size: 70px;
-    color: #ff4081;
-    text-shadow: 0 0 25px #ff66b2, 0 0 50px #ff66b2;
+    color: white;
+    text-shadow: 0 0 25px #ffffff, 0 0 50px #aaaaaa;
     animation: glow 2s ease-in-out infinite alternate;
   }
   @keyframes glow {
-    from { text-shadow: 0 0 15px ##FFFFFF, 0 0 30px ##FFFFFF; }
-    to { text-shadow: 0 0 35px ###FFFFFF, 0 0 70px ##FFFFFF; }
+    from { text-shadow: 0 0 10px #fff, 0 0 20px #ccc; }
+    to { text-shadow: 0 0 30px #fff, 0 0 60px #ddd; }
   }
 </style>
 </head>
@@ -99,9 +99,10 @@ function animate() {
   time += 0.03;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Big bouncing heart
+  // Big bouncing heart (center top 45%)
   let bounceY = Math.sin(time) * 20;
-  drawHeart(canvas.width/2, canvas.height/2 + bounceY, 5, "rgb(255,50,130)");
+  let heartY = canvas.height * 0.45 + bounceY;
+  drawHeart(canvas.width/2, heartY, 5, "rgb(255,50,130)");
 
   // Create small hearts
   if (Math.random() < 0.3) {
@@ -127,6 +128,4 @@ animate();
 </html>
 """
 
-# Fullscreen in Streamlit
-components.html(html_code, height=800, scrolling=False)
-
+components.html(html_code, height=900, scrolling=False)
