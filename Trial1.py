@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Set page config
 st.set_page_config(page_title="Career Interest Quiz", page_icon="🚀", layout="wide")
@@ -47,21 +48,53 @@ st.markdown(
         cursor: pointer;
         font-size: 1.2em;
     }
+    .explanation {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        color: #e0e0e0;
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Define categories with emojis
+# Define categories with emojis and detailed descriptions
 categories = {
-    "Engineering": "🛠️",
-    "Arts": "🎨",
-    "Management": "📊",
-    "Science": "🔬",
-    "IT": "💻"
+    "Engineering": {
+        "emoji": "🛠️",
+        "description": "Engineering involves designing, building, and maintaining structures, machines, and systems. It emphasizes problem-solving, innovation, and technical skills.",
+        "careers": ["Mechanical Engineer", "Civil Engineer", "Electrical Engineer", "Aerospace Engineer"],
+        "strengths": "Analytical thinking, creativity in design, hands-on work."
+    },
+    "Arts": {
+        "emoji": "🎨",
+        "description": "Arts focus on creative expression through visual, performing, or literary mediums. It values imagination, emotional depth, and aesthetic appreciation.",
+        "careers": ["Graphic Designer", "Artist", "Musician", "Writer"],
+        "strengths": "Creativity, emotional intelligence, self-expression."
+    },
+    "Management": {
+        "emoji": "📊",
+        "description": "Management involves leading teams, strategizing business operations, and making decisions to achieve goals. It requires organizational skills and leadership.",
+        "careers": ["Project Manager", "Business Analyst", "CEO", "Consultant"],
+        "strengths": "Leadership, strategic planning, communication."
+    },
+    "Science": {
+        "emoji": "🔬",
+        "description": "Science explores natural phenomena through research, experimentation, and analysis. It seeks to understand and explain the world.",
+        "careers": ["Researcher", "Biologist", "Chemist", "Physicist"],
+        "strengths": "Curiosity, analytical skills, attention to detail."
+    },
+    "IT": {
+        "emoji": "💻",
+        "description": "IT deals with technology, software, and data systems. It involves programming, cybersecurity, and digital solutions.",
+        "careers": ["Software Developer", "Data Scientist", "Cybersecurity Expert", "Web Developer"],
+        "strengths": "Logical thinking, problem-solving, adaptability to tech."
+    }
 }
 
-# Define questions
+# Define questions (same as before, with questions)
 questions = [
     {
         "question": "What do you enjoy most in a project?",
@@ -194,44 +227,4 @@ questions = [
         "options": [
             {"text": "Through diagrams and models", "points": {"Engineering": 1}, "reasoning": "You chose this because you use visuals → indicating skills in visualization and design → suggested careers: Designer, Engineer."},
             {"text": "Through stories and art", "points": {"Arts": 1}, "reasoning": "You chose this because you use narratives → indicating skills in storytelling and expression → suggested careers: Storyteller, Artist."},
-            {"text": "Through presentations and plans", "points": {"Management": 1}, "reasoning": "You chose this because you use structure → indicating skills in communication and planning → suggested careers: Presenter, Manager."},
-            {"text": "Through data and reports", "points": {"Science": 1, "IT": 1}, "reasoning": "You chose this because you use facts → indicating skills in reporting and analysis → suggested careers: Reporter, Analyst."}
-        ]
-    }
-]
-
-# Initialize session state
-if 'answers' not in st.session_state:
-    st.session_state.answers = [None] * len(questions)
-if 'submitted' not in st.session_state:
-    st.session_state.submitted = False
-
-# Title
-st.title("🚀 Career Interest Quiz")
-st.markdown("Answer the following 15 questions to discover your top career category!")
-
-# Display questions
-for i, q in enumerate(questions):
-    st.markdown(f"<div class='card'><p class='question'>Question {i+1}: {q['question']}</p></div>", unsafe_allow_html=True)
-    options = [opt['text'] for opt in q['options']]
-    choice = st.radio("", options, key=f"q{i}", index=0 if st.session_state.answers[i] is None else options.index(st.session_state.answers[i]) if st.session_state.answers[i] in options else 0)
-    st.session_state.answers[i] = choice
-
-# Submit button
-if st.button("Submit", key="submit", help="Click to see your results!"):
-    st.session_state.submitted = True
-
-# Results
-if st.session_state.submitted:
-    # Calculate scores
-    scores = {cat: 0 for cat in categories}
-    explanations = []
-    for i, ans in enumerate(st.session_state.answers):
-        for opt in questions[i]['options']:
-            if opt['text'] == ans:
-                for cat, pts in opt['points'].items():
-                    scores[cat] += pts
-                explanations.append(f"**Question {i+1}**: {opt['reasoning']}")
-                break
-    
-    # Top category
+            {"text": "Through presentations and plans", "
