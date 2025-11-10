@@ -216,4 +216,5 @@ questions = [
             {"text": "Based on evidence and facts", "points": {"Science": 1}, "reasoning": "You chose this because you rely on evidence → indicating skills in objectivity and research → suggested careers: Scientist, Researcher."}
         ]
     },
-    {
+    
+
