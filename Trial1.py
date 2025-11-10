@@ -1,14 +1,14 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Bouncing Heart", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="I Love You ❤️", layout="wide")
 
 html_code = """
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Bouncing Heart</title>
+<title>I Love You</title>
 <style>
   html, body {
     margin: 0;
@@ -20,12 +20,27 @@ html_code = """
   }
   canvas {
     display: block;
-    background: radial-gradient(circle at center, #000010, #000);
+  }
+  #text {
+    position: absolute;
+    top: 65%;
+    width: 100%;
+    text-align: center;
+    font-family: 'Brush Script MT', cursive;
+    font-size: 70px;
+    color: #ff4081;
+    text-shadow: 0 0 25px #ff66b2, 0 0 50px #ff66b2;
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  @keyframes glow {
+    from { text-shadow: 0 0 15px #ff1493, 0 0 30px #ff1493; }
+    to { text-shadow: 0 0 35px #ff66b2, 0 0 70px #ff66b2; }
   }
 </style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
+<div id="text">I LOVE YOU!!!</div>
 
 <script>
 const canvas = document.getElementById("canvas");
@@ -65,7 +80,7 @@ class SmallHeart {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = Math.random() * 0.3 + 0.1;
+    this.size = Math.random() * 0.25 + 0.05;
     this.vy = Math.random() * 2 + 1;
     this.vx = (Math.random() - 0.5) * 1;
     this.alpha = 1;
@@ -73,7 +88,7 @@ class SmallHeart {
   update() {
     this.y += this.vy;
     this.x += this.vx;
-    this.alpha -= 0.004;
+    this.alpha -= 0.003;
   }
   draw() {
     drawHeart(this.x, this.y, this.size, "rgba(255,80,150,1)", this.alpha);
@@ -85,10 +100,10 @@ function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Big bouncing heart
-  let bounceY = Math.sin(time) * 15;
-  drawHeart(canvas.width/2, canvas.height/2 + bounceY, 4, "rgb(255,50,130)");
+  let bounceY = Math.sin(time) * 20;
+  drawHeart(canvas.width/2, canvas.height/2 + bounceY, 5, "rgb(255,50,130)");
 
-  // Create new small hearts
+  // Create small hearts
   if (Math.random() < 0.3) {
     hearts.push(new SmallHeart(Math.random() * canvas.width, -20));
   }
@@ -112,4 +127,5 @@ animate();
 </html>
 """
 
+# Fullscreen in Streamlit
 components.html(html_code, height=800, scrolling=False)
