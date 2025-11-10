@@ -1,100 +1,112 @@
-import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
+# Import necessary libraries
+import streamlit as st  # Streamlit for building the web app interface
+import pandas as pd  # Pandas for data manipulation, though not heavily used here
+import matplotlib.pyplot as plt  # Matplotlib for creating charts in results
+import numpy as np  # NumPy for numerical operations, if needed for calculations
 
-# Set page config
-st.set_page_config(page_title="Career Interest Quiz", page_icon="🚀", layout="wide")
+# Set page configuration for the Streamlit app
+# This defines the title, icon, and layout of the web page
+st.set_page_config(
+    page_title="Career Interest Quiz",  # Title shown in the browser tab
+    page_icon="🚀",  # Icon for the tab
+    layout="wide"  # Wide layout for better use of screen space
+)
 
-# Custom CSS for gradient background and modern UI
+# Custom CSS for styling the app
+# This CSS provides a modern, gradient background and styles for cards, buttons, etc.
 st.markdown(
     """
     <style>
     .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  /* Gradient background from blue to purple */
+        color: white;  /* Default text color */
     }
     .card {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        padding: 20px;
-        margin: 10px 0;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.1);  /* Semi-transparent white background for cards */
+        border-radius: 10px;  /* Rounded corners */
+        padding: 20px;  /* Padding inside the card */
+        margin: 10px 0;  /* Margin around the card */
+        backdrop-filter: blur(10px);  /* Blur effect for modern look */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* Shadow for depth */
     }
     .result-card {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 15px;
-        padding: 25px;
-        margin: 15px 0;
-        text-align: center;
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.2);  /* Slightly more opaque for result cards */
+        border-radius: 15px;  /* More rounded for emphasis */
+        padding: 25px;  /* More padding for results */
+        margin: 15px 0;  /* Larger margin */
+        text-align: center;  /* Center-align text in results */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);  /* Deeper shadow */
     }
     .emoji {
-        font-size: 2em;
+        font-size: 2em;  /* Larger emoji size */
     }
     .question {
-        font-weight: bold;
-        color: #f0f0f0;
+        font-weight: bold;  /* Bold for questions */
+        color: #f0f0f0;  /* Light gray color */
     }
     .option {
-        color: #e0e0e0;
+        color: #e0e0e0;  /* Slightly darker for options */
     }
     .submit-btn {
-        background: #ff6b6b;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1.2em;
+        background: #ff6b6b;  /* Red background for submit button */
+        color: white;  /* White text */
+        border: none;  /* No border */
+        padding: 10px 20px;  /* Padding */
+        border-radius: 5px;  /* Rounded corners */
+        cursor: pointer;  /* Pointer cursor on hover */
+        font-size: 1.2em;  /* Larger font */
     }
     .explanation {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-        padding: 15px;
-        margin: 10px 0;
-        color: #e0e0e0;
+        background: rgba(255, 255, 255, 0.05);  /* Very light background for explanations */
+        border-radius: 8px;  /* Rounded */
+        padding: 15px;  /* Padding */
+        margin: 10px 0;  /* Margin */
+        color: #e0e0e0;  /* Light color */
     }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True  # Allow HTML in markdown for custom styles
 )
 
-# Define categories with emojis and detailed descriptions
+# Define categories with detailed information
+# Each category has an emoji, description, list of careers, and strengths
+# This makes the results more informative
 categories = {
     "Engineering": {
         "emoji": "🛠️",
-        "description": "Engineering involves designing, building, and maintaining structures, machines, and systems. It emphasizes problem-solving, innovation, and technical skills.",
-        "careers": ["Mechanical Engineer", "Civil Engineer", "Electrical Engineer", "Aerospace Engineer"],
-        "strengths": "Analytical thinking, creativity in design, hands-on work."
+        "description": "Engineering involves designing, building, and maintaining structures, machines, and systems. It emphasizes problem-solving, innovation, and technical skills. Engineers work on real-world applications, from bridges to software systems, requiring a blend of creativity and precision.",
+        "careers": ["Mechanical Engineer", "Civil Engineer", "Electrical Engineer", "Aerospace Engineer", "Biomedical Engineer", "Chemical Engineer"],
+        "strengths": "Analytical thinking, creativity in design, hands-on work, attention to detail, problem-solving under pressure."
     },
     "Arts": {
         "emoji": "🎨",
-        "description": "Arts focus on creative expression through visual, performing, or literary mediums. It values imagination, emotional depth, and aesthetic appreciation.",
-        "careers": ["Graphic Designer", "Artist", "Musician", "Writer"],
-        "strengths": "Creativity, emotional intelligence, self-expression."
+        "description": "Arts focus on creative expression through visual, performing, or literary mediums. It values imagination, emotional depth, and aesthetic appreciation. Artists often explore human emotions and culture, creating works that inspire and provoke thought.",
+        "careers": ["Graphic Designer", "Artist", "Musician", "Writer", "Photographer", "Film Director", "Sculptor"],
+        "strengths": "Creativity, emotional intelligence, self-expression, originality, ability to evoke emotions."
     },
     "Management": {
         "emoji": "📊",
-        "description": "Management involves leading teams, strategizing business operations, and making decisions to achieve goals. It requires organizational skills and leadership.",
-        "careers": ["Project Manager", "Business Analyst", "CEO", "Consultant"],
-        "strengths": "Leadership, strategic planning, communication."
+        "description": "Management involves leading teams, strategizing business operations, and making decisions to achieve goals. It requires organizational skills, leadership, and the ability to motivate others. Managers often handle resources, budgets, and long-term planning.",
+        "careers": ["Project Manager", "Business Analyst", "CEO", "Consultant", "Operations Manager", "Entrepreneur", "HR Manager"],
+        "strengths": "Leadership, strategic planning, communication, decision-making, adaptability to change."
     },
     "Science": {
         "emoji": "🔬",
-        "description": "Science explores natural phenomena through research, experimentation, and analysis. It seeks to understand and explain the world.",
-        "careers": ["Researcher", "Biologist", "Chemist", "Physicist"],
-        "strengths": "Curiosity, analytical skills, attention to detail."
+        "description": "Science explores natural phenomena through research, experimentation, and analysis. It seeks to understand and explain the world, from microscopic cells to cosmic events. Scientists contribute to advancements in medicine, technology, and environmental protection.",
+        "careers": ["Researcher", "Biologist", "Chemist", "Physicist", "Environmental Scientist", "Geologist", "Pharmacist"],
+        "strengths": "Curiosity, analytical skills, attention to detail, objectivity, perseverance in research."
     },
     "IT": {
         "emoji": "💻",
-        "description": "IT deals with technology, software, and data systems. It involves programming, cybersecurity, and digital solutions.",
-        "careers": ["Software Developer", "Data Scientist", "Cybersecurity Expert", "Web Developer"],
-        "strengths": "Logical thinking, problem-solving, adaptability to tech."
+        "description": "IT deals with technology, software, and data systems. It involves programming, cybersecurity, and digital solutions. IT professionals build and maintain the digital infrastructure that powers modern life, from apps to networks.",
+        "careers": ["Software Developer", "Data Scientist", "Cybersecurity Expert", "Web Developer", "Network Administrator", "AI Engineer", "Database Administrator"],
+        "strengths": "Logical thinking, problem-solving, adaptability to tech, coding skills, innovation in digital tools."
     }
 }
 
-# Define questions (same as before, with questions)
+# Define the list of questions
+# Each question has a text, options with points and reasoning
+# Points are assigned to categories, reasoning explains the choice
 questions = [
     {
         "question": "What do you enjoy most in a project?",
@@ -205,26 +217,3 @@ questions = [
         ]
     },
     {
-        "question": "What do you dream of achieving?",
-        "options": [
-            {"text": "Inventing something useful", "points": {"Engineering": 1}, "reasoning": "You chose this because you dream of invention → indicating skills in creativity and utility → suggested careers: Inventor, Engineer."},
-            {"text": "Creating a masterpiece", "points": {"Arts": 1}, "reasoning": "You chose this because you dream of creation → indicating skills in artistry and expression → suggested careers: Artist, Composer."},
-            {"text": "Building a successful company", "points": {"Management": 1}, "reasoning": "You chose this because you dream of success → indicating skills in business and leadership → suggested careers: CEO, Founder."},
-            {"text": "Making a scientific discovery", "points": {"Science": 1}, "reasoning": "You chose this because you dream of discovery → indicating skills in exploration and science → suggested careers: Discoverer, Scientist."}
-        ]
-    },
-    {
-        "question": "What bores you?",
-        "options": [
-            {"text": "Repetitive tasks", "points": {"Engineering": 1, "IT": 1}, "reasoning": "You chose this because you dislike routine → indicating skills in innovation and dynamism → suggested careers: Innovator, Developer."},
-            {"text": "Strict rules", "points": {"Arts": 1}, "reasoning": "You chose this because you dislike constraints → indicating skills in freedom and creativity → suggested careers: Free Spirit, Artist."},
-            {"text": "Unclear goals", "points": {"Management": 1}, "reasoning": "You chose this because you dislike ambiguity → indicating skills in clarity and organization → suggested careers: Organizer, Manager."},
-            {"text": "Superficial information", "points": {"Science": 1}, "reasoning": "You chose this because you dislike shallowness → indicating skills in depth and analysis → suggested careers: Deep Thinker, Scientist."}
-        ]
-    },
-    {
-        "question": "How do you communicate ideas?",
-        "options": [
-            {"text": "Through diagrams and models", "points": {"Engineering": 1}, "reasoning": "You chose this because you use visuals → indicating skills in visualization and design → suggested careers: Designer, Engineer."},
-            {"text": "Through stories and art", "points": {"Arts": 1}, "reasoning": "You chose this because you use narratives → indicating skills in storytelling and expression → suggested careers: Storyteller, Artist."},
-            {"text": "Through presentations and plans", "
