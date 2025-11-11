@@ -1,4 +1,4 @@
-# quantum_quest_final.py
+# quantum_quest_final_v2.py
 import streamlit as st
 import time
 import pandas as pd
@@ -19,8 +19,8 @@ html, body, [class*="st-"] {
 .card {background:rgba(255,255,255,0.05); padding:20px; border-radius:16px; box-shadow:0 0 10px rgba(0,0,0,0.4);}
 .opt {background:#16213e; color:white; border:none; padding:10px; border-radius:10px; width:100%; text-align:left;}
 .opt:hover {background:#1a1a2e;}
+.reason-block {background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-top:10px;}
 .progress-bar {height:10px; background:#1f4068; border-radius:10px; overflow:hidden;}
-.reason {font-size:13px; color:#c9d6e2; margin-top:4px;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -32,14 +32,12 @@ descriptions = {
     "Science": "You are driven by curiosity and observation. Science involves experimenting, analyzing, and discovering how the world works.",
     "Arts": "You are expressive and imaginative. Artistic fields thrive on storytelling, design, and creativity that connect emotions with visuals or sounds."
 }
-
 strengths = {
     "Engineering": ["Analytical problem solving", "Design & testing", "Team-based innovation"],
     "IT": ["Logical thinking", "Coding skills", "System optimization"],
     "Science": ["Observation", "Critical research", "Precision"],
     "Arts": ["Creativity", "Aesthetic sense", "Storytelling"]
 }
-
 roles = {
     "Engineering": ["Mechanical Engineer", "Civil Engineer", "Aerospace Designer"],
     "IT": ["Software Developer", "Cybersecurity Expert", "AI Engineer"],
@@ -47,7 +45,7 @@ roles = {
     "Arts": ["Graphic Designer", "Animator", "Film Maker"]
 }
 
-# Each question gives scores + reason
+# ---------------------- Questions ----------------------
 questions = [
     {
         "question": "When solving a problem, what’s your approach?",
@@ -58,139 +56,16 @@ questions = [
             ("Sketch, visualize or design it", {"Arts":3}, "You express ideas creatively.")
         ]
     },
-    {
-        "question": "Which activity do you enjoy most?",
-        "options": [
-            ("Building robots or models", {"Engineering":3}, "You enjoy structured, hands-on projects."),
-            ("Making websites or apps", {"IT":3}, "You like logical digital creation."),
-            ("Doing lab experiments", {"Science":3}, "You’re fascinated by discovery."),
-            ("Painting or filmmaking", {"Arts":3}, "You enjoy creative storytelling.")
-        ]
-    },
-    {
-        "question": "Your dream project would be:",
-        "options": [
-            ("Designing a car or bridge", {"Engineering":3}, "You focus on functionality & precision."),
-            ("Developing AI that learns", {"IT":3}, "You love tech that thinks."),
-            ("Discovering new medicine", {"Science":3}, "You’re drawn to innovation through research."),
-            ("Creating a viral short film", {"Arts":3}, "You aim to evoke emotion through art.")
-        ]
-    },
-    {
-        "question": "In a team, you are usually the one who:",
-        "options": [
-            ("Builds and tests prototypes", {"Engineering":3}, "You’re hands-on and practical."),
-            ("Codes or manages data", {"IT":3}, "You handle logical systems."),
-            ("Researches and verifies facts", {"Science":3}, "You seek accuracy and evidence."),
-            ("Designs the final presentation", {"Arts":3}, "You make things visually appealing.")
-        ]
-    },
-    {
-        "question": "Which word best describes you?",
-        "options": [
-            ("Practical", {"Engineering":3}, "You value working systems."),
-            ("Tech-savvy", {"IT":3}, "You’re comfortable with digital tools."),
-            ("Curious", {"Science":3}, "You ask why and how."),
-            ("Creative", {"Arts":3}, "You love originality and beauty.")
-        ]
-    },
-    {
-        "question": "What would you love to learn next?",
-        "options": [
-            ("How machines work", {"Engineering":3}, "You think in mechanics."),
-            ("How to create apps", {"IT":3}, "You love digital creativity."),
-            ("How DNA replicates", {"Science":3}, "You’re drawn to life sciences."),
-            ("How to edit music/videos", {"Arts":3}, "You express visually or musically.")
-        ]
-    },
-    {
-        "question": "Your ideal workspace is:",
-        "options": [
-            ("A lab or workshop", {"Engineering":3}, "You prefer physical experimentation."),
-            ("A tech office or startup hub", {"IT":3}, "You like fast-paced innovation."),
-            ("A research lab", {"Science":3}, "You enjoy structured exploration."),
-            ("A studio or art room", {"Arts":3}, "You thrive on creative freedom.")
-        ]
-    },
-    {
-        "question": "Which tool would excite you most?",
-        "options": [
-            ("3D printer", {"Engineering":3}, "You love creation and structure."),
-            ("Laptop & code editor", {"IT":3}, "You think in syntax and systems."),
-            ("Microscope", {"Science":3}, "You’re detail-oriented."),
-            ("Camera & sketchbook", {"Arts":3}, "You see beauty in perspective.")
-        ]
-    },
-    {
-        "question": "When facing a challenge, you:",
-        "options": [
-            ("Break it into parts & rebuild", {"Engineering":3}, "You think structurally."),
-            ("Debug it logically", {"IT":3}, "You enjoy solving puzzles."),
-            ("Hypothesize and test", {"Science":3}, "You use evidence and logic."),
-            ("Brainstorm creative alternatives", {"Arts":3}, "You innovate visually.")
-        ]
-    },
-    {
-        "question": "You get most satisfaction from:",
-        "options": [
-            ("Seeing a machine work", {"Engineering":3}, "You love practical results."),
-            ("Making software run perfectly", {"IT":3}, "You enjoy debugging success."),
-            ("Proving a theory", {"Science":3}, "You value discovery."),
-            ("Seeing others inspired by your art", {"Arts":3}, "You thrive on emotional impact.")
-        ]
-    },
-    {
-        "question": "Your favourite subjects are:",
-        "options": [
-            ("Physics / Math", {"Engineering":3}, "You like quantitative reasoning."),
-            ("Computer Science", {"IT":3}, "You enjoy logical precision."),
-            ("Biology / Chemistry", {"Science":3}, "You love exploring nature."),
-            ("Literature / Art", {"Arts":3}, "You express through creativity.")
-        ]
-    },
-    {
-        "question": "How do you handle new tech?",
-        "options": [
-            ("Use it to build stuff", {"Engineering":3}, "You apply tech practically."),
-            ("Learn how it works internally", {"IT":3}, "You explore digital logic."),
-            ("Test it scientifically", {"Science":3}, "You evaluate evidence."),
-            ("Use it creatively", {"Arts":3}, "You see artistic possibilities.")
-        ]
-    },
-    {
-        "question": "Which outcome sounds best?",
-        "options": [
-            ("Inventing a sustainable engine", {"Engineering":3}, "You’re innovative and practical."),
-            ("Creating the next big app", {"IT":3}, "You combine logic with design."),
-            ("Winning a science fair", {"Science":3}, "You value curiosity and data."),
-            ("Exhibiting your artwork", {"Arts":3}, "You live for creative recognition.")
-        ]
-    },
-    {
-        "question": "What kind of problems do you like solving?",
-        "options": [
-            ("Mechanical & design problems", {"Engineering":3}, "You fix how things work."),
-            ("Software & data issues", {"IT":3}, "You automate smartly."),
-            ("Scientific mysteries", {"Science":3}, "You seek truth."),
-            ("Creative challenges", {"Arts":3}, "You communicate ideas visually.")
-        ]
-    },
-    {
-        "question": "In 10 years, you see yourself as:",
-        "options": [
-            ("Building innovations that change lives", {"Engineering":3}, "You shape the physical world."),
-            ("Creating digital revolutions", {"IT":3}, "You innovate through code."),
-            ("Making scientific breakthroughs", {"Science":3}, "You push knowledge forward."),
-            ("Inspiring people through art", {"Arts":3}, "You connect emotion and imagination.")
-        ]
-    }
+    # --- Same structure for all 15 questions (keep yours) ---
 ]
 
 # ---------------------- SESSION ----------------------
 if "index" not in st.session_state:
     st.session_state.index = 0
 if "answers" not in st.session_state:
-    st.session_state.answers = []
+    st.session_state.answers = []  # Stores dict of category scores
+if "details" not in st.session_state:
+    st.session_state.details = []  # Stores (question, chosen_option, reason)
 if "show_result" not in st.session_state:
     st.session_state.show_result = False
 
@@ -199,13 +74,13 @@ def calculate_scores():
     scores = {c: 0 for c in categories}
     for ans in st.session_state.answers:
         for c, v in ans.items():
-            if c in scores:
-                scores[c] += v
+            scores[c] += v
     return scores
 
 def reset_quiz():
     st.session_state.index = 0
     st.session_state.answers = []
+    st.session_state.details = []
     st.session_state.show_result = False
 
 # ---------------------- MAIN ----------------------
@@ -215,21 +90,22 @@ st.markdown("<p class='subtitle'>Discover your true career domain through rocket
 if not st.session_state.show_result:
     q = questions[st.session_state.index]
     st.markdown(f"<div class='card'><h3>Q{st.session_state.index+1}: {q['question']}</h3>", unsafe_allow_html=True)
+    
     for i, (text, score, reason) in enumerate(q["options"]):
         if st.button(text, key=f"opt{i}"):
             st.session_state.answers.append(score)
+            st.session_state.details.append((q["question"], text, reason))
             st.session_state.index += 1
-            st.session_state.reason = reason
             if st.session_state.index >= len(questions):
                 st.session_state.show_result = True
             st.rerun()
+    
     progress = (st.session_state.index / len(questions)) * 100
     st.progress(progress/100)
-    if "reason" in st.session_state:
-        st.markdown(f"<p class='reason'>🧠 Reason: {st.session_state.reason}</p>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
+
 else:
-    # Rocket sequence
+    # Rocket animation
     st.subheader("🚀 Launching your personalized Quantum Report...")
     p = st.progress(0)
     for i in range(100):
@@ -248,6 +124,12 @@ else:
     st.write(f"**Possible Career Roles:** {', '.join(roles[top_category])}")
     st.write("### 📊 Category Scores:")
     st.bar_chart(pd.DataFrame.from_dict(scores, orient='index', columns=['Score']))
+
+    # --------- Personalized Reason Summary ---------
+    st.markdown("## 🧠 Personalized Insights Based on Your Answers")
+    for idx, (ques, opt, reason) in enumerate(st.session_state.details, 1):
+        st.markdown(f"<div class='reason-block'><b>Q{idx}:</b> {ques}<br>🎯 <i>Your choice:</i> {opt}<br>💡 <i>Insight:</i> {reason}</div>", unsafe_allow_html=True)
+
     st.info("This analysis is based on your responses to the 15-question interest assessment. Each choice reflected traits tied to specific domains — giving you a snapshot of your inner alignment.")
 
     if st.button("🔁 Retake Quiz"):
