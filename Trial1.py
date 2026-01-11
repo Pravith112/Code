@@ -18,6 +18,10 @@ st.markdown("""
     max-width: 900px;
     padding-top: 60px;
 }
+/* Hide Streamlit default elements */
+header, footer {
+visibility: hidden;
+}
 
 /* Glass card buttons */
 div.stButton > button {
@@ -199,3 +203,4 @@ else:
         st.session_state.q = 0
         st.session_state.score = 0
         st.rerun()
+
