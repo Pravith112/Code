@@ -242,13 +242,6 @@ for career in recommendations[best_match]:
 st.write("")
 if st.button("🔄 Take Test Again"):
     st.session_state.q_no = 0
-    for key in st.session_state.scores:
+     for key in st.session_state.scores:
     st.session_state.scores[key] = 0
 st.rerun()
-
-
-
-
-
-
-
