@@ -171,11 +171,18 @@ questions = [
 ]
 
 # ------------------ SESSION STATE ------------------
-if "q" not in st.session_state:
-    st.session_state.q = 0
-    st.session_state.score = 0
-
-total = len(questions)
+if "q_no" not in st.session_state:
+st.session_state.q_no = 0
+st.session_state.scores = {
+"Technology": 0,
+"Healthcare": 0,
+"Business": 0,
+"Creative": 0,
+"Engineering": 0,
+"Law": 0,
+"Science": 0,
+"Education": 0
+}
 
 # ------------------ PROGRESS DOTS ------------------
 dots = "".join("● " if i <= st.session_state.q else "○ " for i in range(total))
@@ -220,6 +227,7 @@ else:
         st.session_state.q = 0
         st.session_state.score = 0
         st.rerun()
+
 
 
 
