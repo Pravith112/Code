@@ -214,36 +214,39 @@ if st.session_state.q_no < len(questions):
 
 
 # ------------------ RESULTS ------------------
+# ------------------ RESULTS ------------------
 else:
     st.markdown("<h2 style='text-align:center;'>✨ Test Completed ✨</h2>", unsafe_allow_html=True)
 
-best_match = max(st.session_state.scores, key=st.session_state.scores.get)
+    best_match = max(st.session_state.scores, key=st.session_state.scores.get)
 
-st.markdown(
-f"<h3 style='text-align:center;'>Your Best Career Match: <span style='color:#4cffd7;'>{best_match}</span></h3>",
-unsafe_allow_html=True
-)
+    st.markdown(
+        f"<h3 style='text-align:center;'>Your Best Career Match: <span style='color:#4cffd7;'>{best_match}</span></h3>",
+        unsafe_allow_html=True
+    )
 
-recommendations = {
-"Technology": ["Software Developer", "AI Engineer", "Data Scientist"],
-"Healthcare": ["Doctor", "Nurse", "Medical Researcher"],
-"Business": ["Entrepreneur", "Business Analyst", "Marketing Manager"],
-"Creative": ["Designer", "Filmmaker", "UX Designer"],
-"Engineering": ["Civil Engineer", "Mechanical Engineer", "Electrical Engineer"],
-"Law": ["Lawyer", "Judge", "Public Prosecutor"],
-"Science": ["Research Scientist", "Biotechnologist", "Statistician"],
-"Education": ["Teacher", "Professor", "Academic Researcher"]
-}
+    recommendations = {
+        "Technology": ["Software Developer", "AI Engineer", "Data Scientist"],
+        "Healthcare": ["Doctor", "Nurse", "Medical Researcher"],
+        "Business": ["Entrepreneur", "Business Analyst", "Marketing Manager"],
+        "Creative": ["Designer", "Filmmaker", "UX Designer"],
+        "Engineering": ["Civil Engineer", "Mechanical Engineer", "Electrical Engineer"],
+        "Law": ["Lawyer", "Judge", "Public Prosecutor"],
+        "Science": ["Research Scientist", "Biotechnologist", "Statistician"],
+        "Education": ["Teacher", "Professor", "Academic Researcher"]
+    }
 
-st.write("")
-for career in recommendations[best_match]:
-    st.markdown(f"• {career}")
+    st.write("")
+    for career in recommendations[best_match]:
+        st.markdown(f"• {career}")
 
-st.write("")
-if st.button("🔄 Take Test Again"):
-    st.session_state.q_no = 0
-    for key in st.session_state.scores:
-        st.session_state.scores[key] = 0
-    st.rerun()
+    st.write("")
+    if st.button("🔄 Take Test Again"):
+        st.session_state.q_no = 0
+        # ✅ Fix: indent this for-loop properly (inside the button block)
+        for key in st.session_state.scores:
+            st.session_state.scores[key] = 0
+        st.rerun()
+
 
 
