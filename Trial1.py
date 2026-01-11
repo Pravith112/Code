@@ -19,6 +19,11 @@ st.markdown("""
     padding-top: 60px;
 }
 
+/* Hide Streamlit default elements */
+header, footer {
+visibility: hidden;
+}
+
 /* Glass card buttons */
 div.stButton > button {
     width: 100%;
@@ -65,6 +70,14 @@ div.stButton > button span {
     overflow: hidden;
 }
 
+/* Hover effect (liquid glow) */
+div.stButton > button:hover {
+background: rgba(255, 255, 255, 0.18);
+border: 1px solid rgba(255,255,255,0.6);
+transform: translateY(-4px) scale(1.02);
+box-shadow: 0 0 25px rgba(0,255,200,0.45);
+}
+
 /* Progress dots */
 .progress {
     text-align: center;
@@ -83,6 +96,18 @@ div.stButton > button span {
 
 </style>
 """, unsafe_allow_html=True)
+
+st.markdown(
+"<h1 style='text-align:center;'>🎯 Career Aptitude Test</h1>",
+unsafe_allow_html=True
+)
+st.markdown(
+"<p style='text-align:center; opacity:0.85;'>Click the career that feels more like you</p>",
+unsafe_allow_html=True
+)
+
+st.write("")
+
 
 # ------------------ QUESTIONS DATA ------------------
 # 🔥 EDIT DESCRIPTIONS HERE ONLY 🔥
@@ -199,3 +224,4 @@ else:
         st.session_state.q = 0
         st.session_state.score = 0
         st.rerun()
+
