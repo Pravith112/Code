@@ -1,5 +1,14 @@
 import streamlit as st
 import time
+# ------------------ SESSION STATE INIT ------------------
+if "q_no" not in st.session_state:
+    st.session_state.q_no = 0
+
+if "scores" not in st.session_state:
+    st.session_state.scores = {
+        "Technology":0, "Healthcare":0, "Business":0, "Creative":0,
+        "Engineering":0, "Law":0, "Science":0, "Education":0
+    }
 
 st.set_page_config(page_title="Career Aptitude Test", layout="wide")
 
@@ -186,31 +195,27 @@ st.markdown(f"<div class='progress'>{dots}</div>", unsafe_allow_html=True)
 
 # ------------------ MAIN LOGIC ------------------
 if st.session_state.q_no < len(questions):
-q = questions[st.session_state.q_no]
+    q = questions[st.session_state.q_no]
 
-col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
-with col1:
-if st.button(
-f"**{q['A'][0]}**\n\n{q['A'][1]}",
-key=f"A{st.session_state.q_no}"
-):
-st.session_state.scores[q["A"][2]] += 1
-st.session_state.q_no += 1
-st.rerun()
+    with col1:
+        if st.button(f"**{q['A'][0]}**\n\n{q['A'][1]}", key=f"A{st.session_state.q_no}"):
+            # You can hardcode the category if your tuple doesn't have it
+            st.session_state.scores["Technology"] += 1  # Replace with actual category
+            st.session_state.q_no += 1
+            st.rerun()
 
-with col2:
-if st.button(
-f"**{q['B'][0]}**\n\n{q['B'][1]}",
-key=f"B{st.session_state.q_no}"
-):
-st.session_state.scores[q["B"][2]] += 1
-st.session_state.q_no += 1
-st.rerun()
+    with col2:
+        if st.button(f"**{q['B'][0]}**\n\n{q['B'][1]}", key=f"B{st.session_state.q_no}"):
+            st.session_state.scores["Healthcare"] += 1  # Replace with actual category
+            st.session_state.q_no += 1
+            st.rerun()
+
 
 # ------------------ RESULTS ------------------
 else:
-st.markdown("<h2 style='text-align:center;'>✨ Test Completed ✨</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center;'>✨ Test Completed ✨</h2>", unsafe_allow_html=True)
 
 best_match = max(st.session_state.scores, key=st.session_state.scores.get)
 
@@ -240,5 +245,6 @@ st.session_state.q_no = 0
 for key in st.session_state.scores:
 st.session_state.scores[key] = 0
 st.rerun()
+
 
 
