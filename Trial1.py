@@ -3,31 +3,67 @@ import streamlit as st
 # ================= PAGE CONFIG =================
 st.set_page_config(page_title="Career Aptitude Test", layout="centered")
 
-# ================= CARD BUTTON CSS =================
+# ================= GLOBAL CSS =================
 st.markdown("""
 <style>
-div.stButton > button {
-    width: 100%;
-    height: 220px;
-    border-radius: 18px;
-    border: 1px solid #444;
-    background-color: transparent;
+
+/* Full page gradient background */
+.stApp {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     color: white;
-    font-size: 18px;
-    padding: 20px;
-    white-space: normal;
 }
 
-div.stButton > button:hover {
-    border: 2px solid #4CAF50;
-    background-color: #1e1e1e;
+/* Hide Streamlit default elements */
+header, footer {
+    visibility: hidden;
 }
+
+/* Glassmorphism card buttons */
+div.stButton > button {
+    width: 100%;
+    height: 240px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: white;
+    font-size: 18px;
+    padding: 25px;
+    white-space: normal;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+
+/* Hover effect (liquid glow) */
+div.stButton > button:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255,255,255,0.6);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 0 25px rgba(0,255,200,0.45);
+}
+
+/* Restart button style */
+button[kind="secondary"] {
+    background: rgba(255,255,255,0.15) !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 # ================= TITLE =================
-st.title("🎯 Career Aptitude Test")
-st.write("Select the career option that appeals to you more.")
+st.markdown(
+    "<h1 style='text-align:center;'>🎯 Career Aptitude Test</h1>",
+    unsafe_allow_html=True
+)
+st.markdown(
+    "<p style='text-align:center; opacity:0.85;'>Click the career that feels more like you</p>",
+    unsafe_allow_html=True
+)
+
+st.write("")
 
 # ================= SESSION STATE =================
 if "q_no" not in st.session_state:
@@ -45,50 +81,50 @@ if "q_no" not in st.session_state:
 
 # ================= QUESTIONS =================
 questions = [
-    {"A": ("Nurse", "Provides medical care and supports patients.", "Healthcare"),
-     "B": ("Software Developer", "Builds apps, websites, and software.", "Technology")},
+    {"A": ("Nurse", "Provides medical care and emotional support to patients.", "Healthcare"),
+     "B": ("Software Developer", "Builds applications and solves problems using code.", "Technology")},
 
-    {"A": ("Teacher", "Educates students and builds knowledge.", "Education"),
-     "B": ("Marketing Manager", "Promotes brands and strategies.", "Business")},
+    {"A": ("Teacher", "Guides students and builds strong foundations.", "Education"),
+     "B": ("Marketing Manager", "Creates strategies to promote brands and products.", "Business")},
 
-    {"A": ("Mechanical Engineer", "Designs machines and systems.", "Engineering"),
-     "B": ("Graphic Designer", "Creates visual designs.", "Creative")},
+    {"A": ("Mechanical Engineer", "Designs machines and mechanical systems.", "Engineering"),
+     "B": ("Graphic Designer", "Creates visual content and digital art.", "Creative")},
 
-    {"A": ("Lawyer", "Represents clients in legal matters.", "Law"),
-     "B": ("Data Analyst", "Finds insights from data.", "Technology")},
+    {"A": ("Lawyer", "Represents people and interprets the law.", "Law"),
+     "B": ("Data Analyst", "Finds insights and trends from data.", "Technology")},
 
-    {"A": ("Doctor", "Diagnoses and treats patients.", "Healthcare"),
-     "B": ("Research Scientist", "Conducts scientific research.", "Science")},
+    {"A": ("Doctor", "Diagnoses and treats illnesses.", "Healthcare"),
+     "B": ("Research Scientist", "Conducts experiments and discoveries.", "Science")},
 
-    {"A": ("Civil Engineer", "Builds infrastructure.", "Engineering"),
-     "B": ("Interior Designer", "Designs indoor spaces.", "Creative")},
+    {"A": ("Civil Engineer", "Builds roads, bridges, and infrastructure.", "Engineering"),
+     "B": ("Interior Designer", "Designs beautiful and functional spaces.", "Creative")},
 
-    {"A": ("Entrepreneur", "Builds and runs businesses.", "Business"),
-     "B": ("Professor", "Teaches and researches.", "Education")},
+    {"A": ("Entrepreneur", "Builds and scales businesses.", "Business"),
+     "B": ("Professor", "Teaches and conducts academic research.", "Education")},
 
-    {"A": ("Cybersecurity Analyst", "Protects digital systems.", "Technology"),
-     "B": ("Police Officer", "Maintains law and order.", "Law")},
+    {"A": ("Cybersecurity Analyst", "Protects systems from digital threats.", "Technology"),
+     "B": ("Police Officer", "Maintains public safety and law.", "Law")},
 
-    {"A": ("Biotechnologist", "Applies biology to technology.", "Science"),
-     "B": ("Pharmacist", "Prepares and dispenses medicines.", "Healthcare")},
+    {"A": ("Biotechnologist", "Applies biology to innovation.", "Science"),
+     "B": ("Pharmacist", "Prepares and manages medicines.", "Healthcare")},
 
     {"A": ("Startup Founder", "Creates innovative companies.", "Business"),
-     "B": ("UX Designer", "Designs user experiences.", "Creative")},
+     "B": ("UX Designer", "Designs smooth digital experiences.", "Creative")},
 
-    {"A": ("Electrical Engineer", "Works with power systems.", "Engineering"),
+    {"A": ("Electrical Engineer", "Works with power and electronics.", "Engineering"),
      "B": ("AI Engineer", "Builds intelligent systems.", "Technology")},
 
-    {"A": ("Judge", "Delivers court judgments.", "Law"),
-     "B": ("Social Worker", "Helps communities.", "Healthcare")},
+    {"A": ("Judge", "Delivers justice in court.", "Law"),
+     "B": ("Social Worker", "Supports communities and individuals.", "Healthcare")},
 
-    {"A": ("Economist", "Studies economic systems.", "Business"),
+    {"A": ("Economist", "Studies economic systems and policies.", "Business"),
      "B": ("Statistician", "Analyzes numerical data.", "Science")},
 
-    {"A": ("Film Director", "Creates movies and stories.", "Creative"),
-     "B": ("Architect", "Designs buildings.", "Engineering")},
+    {"A": ("Film Director", "Creates visual stories and films.", "Creative"),
+     "B": ("Architect", "Designs buildings and spaces.", "Engineering")},
 
-    {"A": ("School Principal", "Leads an institution.", "Education"),
-     "B": ("Product Manager", "Manages product strategy.", "Business")}
+    {"A": ("School Principal", "Leads educational institutions.", "Education"),
+     "B": ("Product Manager", "Oversees product vision and growth.", "Business")}
 ]
 
 # ================= TEST FLOW =================
@@ -117,11 +153,14 @@ if st.session_state.q_no < len(questions):
 
 # ================= RESULTS =================
 else:
-    st.subheader("🎉 Test Completed!")
+    st.markdown("<h2 style='text-align:center;'>✨ Test Completed ✨</h2>", unsafe_allow_html=True)
 
     best_match = max(st.session_state.scores, key=st.session_state.scores.get)
 
-    st.markdown(f"### 🔍 Best Career Match: **{best_match}**")
+    st.markdown(
+        f"<h3 style='text-align:center;'>Your Best Career Match: <span style='color:#4cffd7;'>{best_match}</span></h3>",
+        unsafe_allow_html=True
+    )
 
     recommendations = {
         "Technology": ["Software Developer", "AI Engineer", "Data Scientist"],
@@ -134,11 +173,11 @@ else:
         "Education": ["Teacher", "Professor", "Academic Researcher"]
     }
 
+    st.write("")
     for career in recommendations[best_match]:
-        st.write("•", career)
+        st.markdown(f"• {career}")
 
-    st.divider()
-
+    st.write("")
     if st.button("🔄 Take Test Again"):
         st.session_state.q_no = 0
         for key in st.session_state.scores:
