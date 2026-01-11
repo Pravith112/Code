@@ -19,6 +19,11 @@ st.markdown("""
     padding-top: 60px;
 }
 
+/* Hide Streamlit default elements */
+header, footer {
+visibility: hidden;
+}
+
 /* Glass card buttons */
 div.stButton > button {
     width: 100%;
@@ -65,6 +70,14 @@ div.stButton > button span {
     overflow: hidden;
 }
 
+* Hover effect (liquid glow) */
+div.stButton > button:hover {
+background: rgba(255, 255, 255, 0.18);
+border: 1px solid rgba(255,255,255,0.6);
+transform: translateY(-4px) scale(1.02);
+box-shadow: 0 0 25px rgba(0,255,200,0.45);
+}
+
 /* Progress dots */
 .progress {
     text-align: center;
@@ -83,6 +96,17 @@ div.stButton > button span {
 
 </style>
 """, unsafe_allow_html=True)
+
+st.markdown(
+"<h1 style='text-align:center;'>🎯 Career Aptitude Test</h1>",
+unsafe_allow_html=True
+)
+st.markdown(
+"<p style='text-align:center; opacity:0.85;'>Click the career that feels more like you</p>",
+unsafe_allow_html=True
+)
+
+st.write("")
 
 # ------------------ QUESTIONS DATA ------------------
 # 🔥 EDIT DESCRIPTIONS HERE ONLY 🔥
@@ -161,41 +185,60 @@ dots = "".join("● " if i <= st.session_state.q else "○ " for i in range(tota
 st.markdown(f"<div class='progress'>{dots}</div>", unsafe_allow_html=True)
 
 # ------------------ MAIN LOGIC ------------------
-if st.session_state.q < total:
-    q = questions[st.session_state.q]
+if st.session_state.q_no < len(questions):
+q = questions[st.session_state.q_no]
 
-    st.markdown("<div class='fade'>", unsafe_allow_html=True)
+col1, col2 = st.columns(2)
 
-    col1, col2 = st.columns(2, gap="large")
+with col1:
+if st.button(
+f"**{q['A'][0]}**\n\n{q['A'][1]}",
+key=f"A{st.session_state.q_no}"
+):
+st.session_state.scores[q["A"][2]] += 1
+st.session_state.q_no += 1
+st.rerun()
 
-    with col1:
-        if st.button(f"**{q['A'][0]}**\n\n{q['A'][1]}"):
-            st.session_state.score += 1
-            st.session_state.q += 1
-            st.rerun()
-
-    with col2:
-        if st.button(f"**{q['B'][0]}**\n\n{q['B'][1]}"):
-            st.session_state.q += 1
-            st.rerun()
-
-    st.markdown("</div>", unsafe_allow_html=True)
+with col2:
+if st.button(
+f"**{q['B'][0]}**\n\n{q['B'][1]}",
+key=f"B{st.session_state.q_no}"
+):
+st.session_state.scores[q["B"][2]] += 1
+st.session_state.q_no += 1
+st.rerun()
 
 # ------------------ RESULTS ------------------
 else:
-    confidence = int((st.session_state.score / total) * 100)
+st.markdown("<h2 style='text-align:center;'>✨ Test Completed ✨</h2>", unsafe_allow_html=True)
 
-    st.markdown("<h2 style='text-align:center'>Career Confidence Score</h2>", unsafe_allow_html=True)
-    st.markdown(f"<h1 style='text-align:center'>{confidence}%</h1>", unsafe_allow_html=True)
+best_match = max(st.session_state.scores, key=st.session_state.scores.get)
 
-    st.markdown("""
-    <p style='text-align:center;font-size:18px'>
-    This score reflects how strongly your choices align toward analytical, leadership,
-    and professional career paths.
-    </p>
-    """, unsafe_allow_html=True)
+st.markdown(
+f"<h3 style='text-align:center;'>Your Best Career Match: <span style='color:#4cffd7;'>{best_match}</span></h3>",
+unsafe_allow_html=True
+)
 
-    if st.button("🔁 Take Test Again"):
-        st.session_state.q = 0
-        st.session_state.score = 0
-        st.rerun()
+recommendations = {
+"Technology": ["Software Developer", "AI Engineer", "Data Scientist"],
+"Healthcare": ["Doctor", "Nurse", "Medical Researcher"],
+"Business": ["Entrepreneur", "Business Analyst", "Marketing Manager"],
+"Creative": ["Designer", "Filmmaker", "UX Designer"],
+"Engineering": ["Civil Engineer", "Mechanical Engineer", "Electrical Engineer"],
+"Law": ["Lawyer", "Judge", "Public Prosecutor"],
+"Science": ["Research Scientist", "Biotechnologist", "Statistician"],
+"Education": ["Teacher", "Professor", "Academic Researcher"]
+}
+
+st.write("")
+for career in recommendations[best_match]:
+st.markdown(f"• {career}")
+
+st.write("")
+if st.button("🔄 Take Test Again"):
+st.session_state.q_no = 0
+for key in st.session_state.scores:
+st.session_state.scores[key] = 0
+st.rerun()
+
+
