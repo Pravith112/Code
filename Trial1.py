@@ -103,7 +103,7 @@ if st.session_state.q_no < len(questions):
             st.session_state.scores[q["B"][2]] += 1
 
         st.session_state.q_no += 1
-        st.experimental_rerun()
+        st.rerun()
 
 # Results
 else:
@@ -128,3 +128,4 @@ else:
         st.write("•", career)
 
     st.success("This result is based on your interests and preferences.")
+
