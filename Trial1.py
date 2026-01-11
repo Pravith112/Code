@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+
 # ------------------ SESSION STATE INIT ------------------
 if "q_no" not in st.session_state:
     st.session_state.q_no = 0
@@ -15,7 +16,6 @@ st.set_page_config(page_title="Career Aptitude Test", layout="wide")
 # ------------------ CUSTOM CSS ------------------
 st.markdown("""
 <style>
-
 /* Background */
 .stApp {
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
@@ -68,6 +68,9 @@ div.stButton > button {
 div.stButton > button:hover {
     transform: scale(1.03);
     background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.6);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 0 25px rgba(0,255,200,0.45);
 }
 
 /* Text clamp */
@@ -77,14 +80,6 @@ div.stButton > button span {
     -webkit-line-clamp: 5;
     -webkit-box-orient: vertical;
     overflow: hidden;
-}
-
-* Hover effect (liquid glow) */
-div.stButton > button:hover {
-background: rgba(255, 255, 255, 0.18);
-border: 1px solid rgba(255,255,255,0.6);
-transform: translateY(-4px) scale(1.02);
-box-shadow: 0 0 25px rgba(0,255,200,0.45);
 }
 
 /* Progress dots */
@@ -102,118 +97,71 @@ box-shadow: 0 0 25px rgba(0,255,200,0.45);
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown(
-"<h1 style='text-align:center;'>🎯 Career Aptitude Test</h1>",
-unsafe_allow_html=True
-)
-st.markdown(
-"<p style='text-align:center; opacity:0.85;'>Click the career that feels more like you</p>",
-unsafe_allow_html=True
-)
-
+# ------------------ HEADER ------------------
+st.markdown("<h1 style='text-align:center;'>🎯 Career Aptitude Test</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; opacity:0.85;'>Click the career that feels more like you</p>", unsafe_allow_html=True)
 st.write("")
 
 # ------------------ QUESTIONS DATA ------------------
-# 🔥 EDIT DESCRIPTIONS HERE ONLY 🔥
 questions = [
-    {
-        "A": ("Software Engineer", "Designs and builds applications, websites, and intelligent systems using programming."),
-        "B": ("Doctor", "Diagnoses illnesses, treats patients, and improves human health through medical science.")
-    },
-    {
-        "A": ("Architect", "Plans and designs buildings focusing on aesthetics, safety, and functionality."),
-        "B": ("Civil Engineer", "Constructs and manages infrastructure like roads, bridges, and buildings.")
-    },
-    {
-        "A": ("Psychologist", "Studies human behavior and helps people manage emotions and mental health."),
-        "B": ("HR Manager", "Manages employee relations, recruitment, and workplace culture.")
-    },
-    {
-        "A": ("Journalist", "Researches, writes, and reports news for newspapers, TV, and digital media."),
-        "B": ("Content Creator", "Creates engaging digital content for social media and online platforms.")
-    },
-    {
-        "A": ("Entrepreneur", "Builds and manages startups by taking financial and strategic risks."),
-        "B": ("Corporate Manager", "Oversees teams and operations within established organizations.")
-    },
-    {
-        "A": ("Lawyer", "Represents clients legally and interprets laws and regulations."),
-        "B": ("Judge", "Presides over court cases and ensures justice is delivered fairly.")
-    },
-    {
-        "A": ("Graphic Designer", "Creates visual designs for branding, ads, and digital products."),
-        "B": ("UI/UX Designer", "Designs user-friendly interfaces and experiences for apps and websites.")
-    },
-    {
-        "A": ("Teacher", "Educates and mentors students to build knowledge and values."),
-        "B": ("Professor", "Teaches advanced subjects and conducts academic research.")
-    },
-    {
-        "A": ("Scientist", "Conducts experiments and research to discover new knowledge."),
-        "B": ("Research Analyst", "Analyzes data to support business and policy decisions.")
-    },
-    {
-        "A": ("Marketing Manager", "Develops strategies to promote products and brands."),
-        "B": ("Sales Executive", "Directly sells products and builds customer relationships.")
-    },
-    {
-        "A": ("Data Scientist", "Analyzes complex data to extract insights and predictions."),
-        "B": ("Statistician", "Applies mathematical techniques to interpret numerical data.")
-    },
-    {
-        "A": ("IAS Officer", "Implements government policies and manages administration."),
-        "B": ("Politician", "Represents people and participates in law-making.")
-    },
-    {
-        "A": ("Film Director", "Leads film production and storytelling."),
-        "B": ("Actor", "Performs roles in films, theatre, or television.")
-    },
-    {
-        "A": ("Mechanical Engineer", "Designs machines and mechanical systems."),
-        "B": ("Automobile Engineer", "Specializes in vehicle design and manufacturing.")
-    },
-    {
-        "A": ("Defense Officer", "Protects the nation through armed services."),
-        "B": ("Police Officer", "Maintains law, order, and public safety.")
-    },
+    {"A": ("Software Engineer", "Designs and builds applications, websites, and intelligent systems using programming.", "Technology"),
+     "B": ("Doctor", "Diagnoses illnesses, treats patients, and improves human health through medical science.", "Healthcare")},
+    {"A": ("Architect", "Plans and designs buildings focusing on aesthetics, safety, and functionality.", "Engineering"),
+     "B": ("Civil Engineer", "Constructs and manages infrastructure like roads, bridges, and buildings.", "Engineering")},
+    {"A": ("Psychologist", "Studies human behavior and helps people manage emotions and mental health.", "Science"),
+     "B": ("HR Manager", "Manages employee relations, recruitment, and workplace culture.", "Business")},
+    {"A": ("Journalist", "Researches, writes, and reports news for newspapers, TV, and digital media.", "Creative"),
+     "B": ("Content Creator", "Creates engaging digital content for social media and online platforms.", "Creative")},
+    {"A": ("Entrepreneur", "Builds and manages startups by taking financial and strategic risks.", "Business"),
+     "B": ("Corporate Manager", "Oversees teams and operations within established organizations.", "Business")},
+    {"A": ("Lawyer", "Represents clients legally and interprets laws and regulations.", "Law"),
+     "B": ("Judge", "Presides over court cases and ensures justice is delivered fairly.", "Law")},
+    {"A": ("Graphic Designer", "Creates visual designs for branding, ads, and digital products.", "Creative"),
+     "B": ("UI/UX Designer", "Designs user-friendly interfaces and experiences for apps and websites.", "Creative")},
+    {"A": ("Teacher", "Educates and mentors students to build knowledge and values.", "Education"),
+     "B": ("Professor", "Teaches advanced subjects and conducts academic research.", "Education")},
+    {"A": ("Scientist", "Conducts experiments and research to discover new knowledge.", "Science"),
+     "B": ("Research Analyst", "Analyzes data to support business and policy decisions.", "Science")},
+    {"A": ("Marketing Manager", "Develops strategies to promote products and brands.", "Business"),
+     "B": ("Sales Executive", "Directly sells products and builds customer relationships.", "Business")},
+    {"A": ("Data Scientist", "Analyzes complex data to extract insights and predictions.", "Technology"),
+     "B": ("Statistician", "Applies mathematical techniques to interpret numerical data.", "Science")},
+    {"A": ("IAS Officer", "Implements government policies and manages administration.", "Law"),
+     "B": ("Politician", "Represents people and participates in law-making.", "Law")},
+    {"A": ("Film Director", "Leads film production and storytelling.", "Creative"),
+     "B": ("Actor", "Performs roles in films, theatre, or television.", "Creative")},
+    {"A": ("Mechanical Engineer", "Designs machines and mechanical systems.", "Engineering"),
+     "B": ("Automobile Engineer", "Specializes in vehicle design and manufacturing.", "Engineering")},
+    {"A": ("Defense Officer", "Protects the nation through armed services.", "Law"),
+     "B": ("Police Officer", "Maintains law, order, and public safety.", "Law")},
 ]
-
-# ------------------ SESSION STATE ------------------
-if "q" not in st.session_state:
-    st.session_state.q = 0
-    st.session_state.score = 0
 
 total = len(questions)
 
 # ------------------ PROGRESS DOTS ------------------
-dots = "".join("● " if i <= st.session_state.q else "○ " for i in range(total))
+dots = "".join("● " if i <= st.session_state.q_no else "○ " for i in range(total))
 st.markdown(f"<div class='progress'>{dots}</div>", unsafe_allow_html=True)
 
 # ------------------ MAIN LOGIC ------------------
 if st.session_state.q_no < len(questions):
     q = questions[st.session_state.q_no]
-
     col1, col2 = st.columns(2)
 
     with col1:
         if st.button(f"**{q['A'][0]}**\n\n{q['A'][1]}", key=f"A{st.session_state.q_no}"):
-            # You can hardcode the category if your tuple doesn't have it
-            st.session_state.scores["Technology"] += 1  # Replace with actual category
+            st.session_state.scores[q['A'][2]] += 1
             st.session_state.q_no += 1
             st.rerun()
 
     with col2:
         if st.button(f"**{q['B'][0]}**\n\n{q['B'][1]}", key=f"B{st.session_state.q_no}"):
-            st.session_state.scores["Healthcare"] += 1  # Replace with actual category
+            st.session_state.scores[q['B'][2]] += 1
             st.session_state.q_no += 1
             st.rerun()
 
-
-# ------------------ RESULTS ------------------
 # ------------------ RESULTS ------------------
 else:
     st.markdown("<h2 style='text-align:center;'>✨ Test Completed ✨</h2>", unsafe_allow_html=True)
@@ -243,10 +191,6 @@ else:
     st.write("")
     if st.button("🔄 Take Test Again"):
         st.session_state.q_no = 0
-        # ✅ Fix: indent this for-loop properly (inside the button block)
         for key in st.session_state.scores:
             st.session_state.scores[key] = 0
         st.rerun()
-
-
-
