@@ -21,18 +21,40 @@ header, footer {
 /* Glassmorphism card buttons */
 div.stButton > button {
     width: 100%;
-    height: 240px;
+    height: 260px;              /* FIXED HEIGHT */
+    min-height: 260px;
+    max-height: 260px;
+
     border-radius: 20px;
     border: 1px solid rgba(255,255,255,0.25);
     background: rgba(255, 255, 255, 0.08);
+
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
+
     color: white;
     font-size: 18px;
-    padding: 25px;
+    padding: 22px;
+
+    display: flex;              /* FLEX FIX */
+    flex-direction: column;
+    justify-content: center;    /* CENTER CONTENT */
+    align-items: center;
+    text-align: center;
+
     white-space: normal;
+    overflow: hidden;           /* PREVENT RESIZE */
     transition: all 0.3s ease;
     box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+
+/* Clamp text so it never stretches box */
+div.stButton > button p,
+div.stButton > button span {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;      /* MAX LINES */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 /* Hover effect (liquid glow) */
@@ -183,3 +205,4 @@ else:
         for key in st.session_state.scores:
             st.session_state.scores[key] = 0
         st.rerun()
+
