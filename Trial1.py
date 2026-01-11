@@ -68,6 +68,13 @@ div.stButton > button span {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+/* Hover effect (liquid glow) */
+div.stButton > button:hover {
+background: rgba(255, 255, 255, 0.18);
+border: 1px solid rgba(255,255,255,0.6);
+transform: translateY(-4px) scale(1.02);
+box-shadow: 0 0 25px rgba(0,255,200,0.45);
+}
 
 /* Progress dots */
 .progress {
@@ -203,4 +210,5 @@ else:
         st.session_state.q = 0
         st.session_state.score = 0
         st.rerun()
+
 
